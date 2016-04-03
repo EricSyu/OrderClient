@@ -10,5 +10,5 @@
         android:paddingLeft = "60px"
         android:paddingTop = "10px"
         android:paddingBottom = "10px"
-        android:textSize = "26sp"/>
+        android:textSize = "30sp"/>
 </LinearLayout>
