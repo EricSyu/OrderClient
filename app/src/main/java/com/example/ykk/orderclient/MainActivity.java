@@ -13,10 +13,12 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,13 +27,14 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     String[] categories = {"漢堡類", "蛋餅類"};
-    String[] hamburger = {"火腿蛋堡 $30", "培根蛋堡 $30"};
+    static String[] hamburger = {"", "培根蛋堡 $30"};
     String[] omelet = {"原味蛋餅 $30"};
 
-    private  ExpandableListView elv;
-    private  ExpandableAdapter viewAdapter;
-    private  Button btn_ok;
+    private ExpandableListView elv;
+    private ExpandableAdapter viewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +52,21 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        ClientHandler SocketConnect = new ClientHandler();
+        SocketConnect.start();
+        try {
+            SocketConnect.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         initViews();
         setListeners();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     private void initViews() {
@@ -58,14 +74,14 @@ public class MainActivity extends AppCompatActivity
         List<Map<String, String>> groups = new ArrayList<>();
         List<List<Map<String, String>>> childs = new ArrayList<>();
 
-        for(int i = 0; i < categories.length; i++){
+        for (int i = 0; i < categories.length; i++) {
             Map<String, String> group = new HashMap<>();
             group.put("group", categories[i]);
             groups.add(group);
         }
 
         List<Map<String, String>> child = new ArrayList<>();
-        for(int i = 0; i < hamburger.length; i++){
+        for (int i = 0; i < hamburger.length; i++) {
             Map<String, String> child1Data = new HashMap<>();
             child1Data.put("child", hamburger[i]);
             child.add(child1Data);
@@ -73,7 +89,7 @@ public class MainActivity extends AppCompatActivity
         childs.add(child);
 
         child = new ArrayList<>();
-        for(int i = 0; i < omelet.length; i++){
+        for (int i = 0; i < omelet.length; i++) {
             Map<String, String> child1Data = new HashMap<>();
             child1Data.put("child", omelet[i]);
             child.add(child1Data);
@@ -89,7 +105,7 @@ public class MainActivity extends AppCompatActivity
         elv.setOnChildClickListener(choose_dish);
     }
 
-    private ExpandableListView.OnChildClickListener choose_dish = new ExpandableListView.OnChildClickListener(){
+    private ExpandableListView.OnChildClickListener choose_dish = new ExpandableListView.OnChildClickListener() {
 
         @Override
         public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
@@ -97,12 +113,12 @@ public class MainActivity extends AppCompatActivity
             final View diav = inflater.inflate(R.layout.dia_dish, null);
 
             AlertDialog.Builder dishdialog = new AlertDialog.Builder(MainActivity.this);
-            dishdialog.setTitle(((Map<String, String>)viewAdapter.getChild(groupPosition, childPosition)).get("child"));
+            dishdialog.setTitle(((Map<String, String>) viewAdapter.getChild(groupPosition, childPosition)).get("child"));
             dishdialog.setView(diav);
             dishdialog.setPositiveButton(getResources().getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    Toast.makeText(MainActivity.this, "xxx" , Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "xxx", Toast.LENGTH_SHORT).show();
                 }
             });
             dishdialog.show();
@@ -135,9 +151,28 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_bell:
+                Thread t = new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            Socket s = new Socket("192.168.1.106", 6000);
+                            DataOutputStream dos = null;
+                            dos = new DataOutputStream(ClientHandler.Client_socket.getOutputStream());
+                            dos.writeUTF("服務鈴");
+                            dos.flush();
+                            dos.close();
+                            s.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                t.start();
+                Toast.makeText(this, "服務鈴", Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.action_settings:
+                initViews();
                 break;
         }
 
