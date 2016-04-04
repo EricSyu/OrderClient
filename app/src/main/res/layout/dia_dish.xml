@@ -70,25 +70,5 @@
                 android:layout_weight="1" />
         </LinearLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="0.19">
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="確認"
-                android:id="@+id/btn_ok" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="取消"
-                android:id="@+id/btn_cancel"
-                android:layout_gravity="top" />
-        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

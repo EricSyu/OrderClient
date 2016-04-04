@@ -1,5 +1,7 @@
 package com.example.ykk.orderclient;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -7,9 +9,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +28,10 @@ public class MainActivity extends AppCompatActivity
     String[] categories = {"漢堡類", "蛋餅類"};
     String[] hamburger = {"火腿蛋堡 $30", "培根蛋堡 $30"};
     String[] omelet = {"原味蛋餅 $30"};
+
+    private  ExpandableListView elv;
+    private  ExpandableAdapter viewAdapter;
+    private  Button btn_ok;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +50,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         initViews();
-        setListensers();
+        setListeners();
     }
 
     private void initViews() {
@@ -53,54 +63,53 @@ public class MainActivity extends AppCompatActivity
             group.put("group", categories[i]);
             groups.add(group);
         }
-//        //準備一級清單中顯示的資料:2個一級清單,分別顯示"group1"和"group2"
-//        Map<String, String> group1 = new HashMap<>();
-//        group1.put("group", "漢堡類");
-//        Map<String, String> group2 = new HashMap<>();
-//        group2.put("group", "蛋餅類");
-//        groups.add(group1);
-//        groups.add(group2);
 
-        List<Map<String, String>> child1 = new ArrayList<>();
+        List<Map<String, String>> child = new ArrayList<>();
         for(int i = 0; i < hamburger.length; i++){
             Map<String, String> child1Data = new HashMap<>();
             child1Data.put("child", hamburger[i]);
-            child1.add(child1Data);
+            child.add(child1Data);
         }
-//        //準備第一個一級清單中的二級清單資料:兩個二級清單,分別顯示"childData1"和"childData2"
-//        List<Map<String, String>> child1 = new ArrayList<>();
-//        Map<String, String> child1Data1 = new HashMap<>();
-//        child1Data1.put("child", "火腿蛋堡 $30");
-//        Map<String, String> child1Data2 = new HashMap<>();
-//        child1Data2.put("child", "培根蛋堡 $30");
-//        child1.add(child1Data1);
-//        child1.add(child1Data2);
+        childs.add(child);
 
-        List<Map<String, String>> child2 = new ArrayList<>();
+        child = new ArrayList<>();
         for(int i = 0; i < omelet.length; i++){
             Map<String, String> child1Data = new HashMap<>();
             child1Data.put("child", omelet[i]);
-            child2.add(child1Data);
+            child.add(child1Data);
         }
+        childs.add(child);
 
-//        //準備第二個一級清單中的二級清單資料:一個二級清單,顯示"child2Data1"
-//        List<Map<String, String>> child2 = new ArrayList<>();
-//        Map<String, String> child2Data1 = new HashMap<>();
-//        child2Data1.put("child", "原味蛋餅 $15");
-//        child2.add(child2Data1);
-
-        //用一個list物件保存所有的二級清單資料
-        childs.add(child1);
-        childs.add(child2);
-
-        ExpandableListView elv = (ExpandableListView) findViewById(R.id.mExpandableListView);
-        ExpandableAdapter viewAdapter = new ExpandableAdapter(this, groups, childs);
+        elv = (ExpandableListView) findViewById(R.id.mExpandableListView);
+        viewAdapter = new ExpandableAdapter(this, groups, childs);
         elv.setAdapter(viewAdapter);
     }
 
-    private void setListensers() {
-
+    private void setListeners() {
+        elv.setOnChildClickListener(choose_dish);
     }
+
+    private ExpandableListView.OnChildClickListener choose_dish = new ExpandableListView.OnChildClickListener(){
+
+        @Override
+        public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+            LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+            final View diav = inflater.inflate(R.layout.dia_dish, null);
+
+            AlertDialog.Builder dishdialog = new AlertDialog.Builder(MainActivity.this);
+            dishdialog.setTitle(((Map<String, String>)viewAdapter.getChild(groupPosition, childPosition)).get("child"));
+            dishdialog.setView(diav);
+            dishdialog.setPositiveButton(getResources().getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Toast.makeText(MainActivity.this, "xxx" , Toast.LENGTH_SHORT).show();
+                }
+            });
+            dishdialog.show();
+
+            return false;
+        }
+    };
 
     @Override
     public void onBackPressed() {
