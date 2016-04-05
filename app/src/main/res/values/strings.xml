@@ -8,7 +8,13 @@
     <string name="action_order">Order</string>
     <string name="action_bell">Bell</string>
 
+    <!-- dialog -  order -->
     <string name="dialog_title">請點餐</string>
     <string name="dialog_ok">確認</string>
     <string name="dialog_cancel">取消</string>
+
+    <!-- dialog - already order -->
+    <string name="dialog_already_title">已點菜單</string>
+    <string name="dialog_already_sent">送出</string>
+
 </resources>

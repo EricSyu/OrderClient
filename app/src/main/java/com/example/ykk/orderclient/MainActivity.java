@@ -8,14 +8,18 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.DataOutputStream;
@@ -39,6 +43,10 @@ public class MainActivity extends AppCompatActivity
 
     private ExpandableListView elv;
     private ExpandableAdapter viewAdapter;
+
+
+    //already order
+    private ArrayAdapter<String> listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +135,7 @@ public class MainActivity extends AppCompatActivity
                 public void onClick(DialogInterface dialog, int which) {
                     boolean inListfalg = false;
                     try{
-                        for (int i = 0; i < OrderDishList.size(); i++) {
+                        for (int i = 0; i < OrderDishList.size(); i++) {//這是不是可以else
                             if (OrderDishList.get(i).getName() == dish_name) {
                                 int num = OrderDishList.get(i).getNum();
                                 num += Integer.valueOf(edtNum.getText().toString());
@@ -223,8 +231,8 @@ public class MainActivity extends AppCompatActivity
 //                }
                 break;
 
-            case R.id.action_settings:
-                initViews();
+            case R.id.action_order:
+                alreadyOrder();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -252,4 +260,41 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+    private void alreadyOrder(){
+        LinearLayout linearLayoutMain = new LinearLayout(this);//new a layout
+        linearLayoutMain.setLayoutParams(new LinearLayoutCompat.LayoutParams(
+                LinearLayoutCompat.LayoutParams.MATCH_PARENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT));
+        ListView listView = new ListView(this);//get current context
+        listView.setFadingEdgeLength(0);
+
+        ArrayList<String> orderList = new ArrayList<>();
+        for (int i = 0; i < OrderDishList.size(); i++) {
+            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getNum()) );
+        }
+
+        listAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,orderList);
+        listView.setAdapter(listAdapter);
+
+        linearLayoutMain.addView(listView);//add listView into current context
+
+        final AlertDialog alreadyDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_already_title).setView(linearLayoutMain)//add into dialog
+                .setNegativeButton(getResources().getString(R.string.dialog_already_sent), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface alreadyDialog, int which) {
+                        // ++++ 送出
+                    }
+                })
+                .setPositiveButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface alreadyDialog, int which) {
+                        alreadyDialog.cancel();
+                    }
+                }).create();
+
+        alreadyDialog.show();
+    }
 }
+
