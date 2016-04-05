@@ -9,10 +9,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,8 +33,9 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = MainActivity.class.getSimpleName();
 
     String[] categories = {"漢堡類", "蛋餅類"};
-    static String[] hamburger = {"", "培根蛋堡 $30"};
+    static String[] hamburger = {"火腿蛋堡 $30", "培根蛋堡 $30"};
     String[] omelet = {"原味蛋餅 $30"};
+    LinkedList<OrderDish> OrderDishList = new LinkedList<>();
 
     private ExpandableListView elv;
     private ExpandableAdapter viewAdapter;
@@ -52,13 +56,13 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        ClientHandler SocketConnect = new ClientHandler();
-        SocketConnect.start();
-        try {
-            SocketConnect.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        ClientHandler SocketConnect = new ClientHandler();
+//        SocketConnect.start();
+//        try {
+//            SocketConnect.sleep(1000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         initViews();
         setListeners();
@@ -112,13 +116,42 @@ public class MainActivity extends AppCompatActivity
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
             final View diav = inflater.inflate(R.layout.dia_dish, null);
 
+            final String dish_name = ((Map<String, String>) viewAdapter.getChild(groupPosition, childPosition)).get("child");
+            final EditText edtNum = (EditText)diav.findViewById(R.id.edt_ordernum);
+
             AlertDialog.Builder dishdialog = new AlertDialog.Builder(MainActivity.this);
-            dishdialog.setTitle(((Map<String, String>) viewAdapter.getChild(groupPosition, childPosition)).get("child"));
+            dishdialog.setTitle(dish_name);
             dishdialog.setView(diav);
-            dishdialog.setPositiveButton(getResources().getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+            dishdialog.setNegativeButton(getResources().getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    Toast.makeText(MainActivity.this, "xxx", Toast.LENGTH_SHORT).show();
+                    boolean inListfalg = false;
+                    try{
+                        for (int i = 0; i < OrderDishList.size(); i++) {
+                            if (OrderDishList.get(i).getName() == dish_name) {
+                                int num = OrderDishList.get(i).getNum();
+                                num += Integer.valueOf(edtNum.getText().toString());
+                                OrderDishList.get(i).setNum(num);
+                                inListfalg = true;
+                            }
+                        }
+                        if (!inListfalg) {
+                            OrderDish OD = new OrderDish(dish_name, Integer.valueOf(edtNum.getText().toString()));
+                            OrderDishList.add(OD);
+                        }
+                        for (int i = 0; i < OrderDishList.size(); i++) {
+                            Log.i(TAG, "Dish in the List : " + OrderDishList.get(i).getName() + " " +
+                                    String.valueOf(OrderDishList.get(i).getNum()) + "\n");
+                        }
+                    } catch (Exception obj){
+                        Toast.makeText(MainActivity.this, "請輸入所需的數量", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            dishdialog.setPositiveButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
                 }
             });
             dishdialog.show();
@@ -156,8 +189,7 @@ public class MainActivity extends AppCompatActivity
                     public void run() {
                         try {
                             Socket s = new Socket("192.168.1.106", 6000);
-                            DataOutputStream dos = null;
-                            dos = new DataOutputStream(ClientHandler.Client_socket.getOutputStream());
+                            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
                             dos.writeUTF("服務鈴");
                             dos.flush();
                             dos.close();
@@ -168,14 +200,33 @@ public class MainActivity extends AppCompatActivity
                     }
                 };
                 t.start();
-                Toast.makeText(this, "服務鈴", Toast.LENGTH_SHORT).show();
+//                if (!ClientHandler.Client_socket.isConnected()) {
+//                    ClientHandler SocketConnect = new ClientHandler();
+//                    SocketConnect.start();
+//                }
+//                if (ClientHandler.Client_socket.isConnected()) {// 確認socket在連通狀態下
+//                    try {
+//                        DataOutputStream dos = new DataOutputStream(ClientHandler.Client_socket.getOutputStream());
+//                        dos.writeUTF("服務鈴");
+//                        dos.flush();
+//                        dos.close();
+//                        ClientHandler.Client_socket.close();
+//
+//                        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(ClientHandler.Client_socket.getOutputStream()));// 寫入的Buffer
+//                        bw.write("服務鈴1");
+//                        bw.flush();
+//
+//                        Toast.makeText(this, "服務鈴", Toast.LENGTH_SHORT).show();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
                 break;
 
             case R.id.action_settings:
                 initViews();
                 break;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -197,7 +248,6 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_send:
                 break;
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
