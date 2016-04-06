@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
@@ -35,24 +36,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity{
+        //implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     static int port = 6000;
     static String Server_IP = "192.168.1.106";
 
-    String[] categories = {"漢堡類", "蛋餅類"};
-    static String[] hamburger = {"火腿蛋堡 $30", "培根蛋堡 $30"};
-    String[] omelet = {"原味蛋餅 $30"};
-
     ArrayList<Dish> MenuList = new ArrayList<>();
     LinkedList<Dish> OrderDishList = new LinkedList<>();
-    int tablenum = 0;
+    int tableNum = 0;
 
-    private ExpandableListView elv;
-    private ExpandableAdapter viewAdapter;
+    //Menu ListView
+    private ListView menuListView;
+    private String[] list = {"火腿蛋堡 $30","培根蛋堡 $30","原味蛋餅 $30" };
+    private ArrayAdapter<String> menuListAdapter;
 
     //already order
     private ArrayAdapter<String> listAdapter;
@@ -63,15 +62,15 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+/*
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+*/
+        //NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        //navigationView.setNavigationItemSelectedListener(this);
 
 
         setMenu();
@@ -112,48 +111,22 @@ public class MainActivity extends AppCompatActivity
 
     private void initViews() {
 
-        List<Map<String, String>> groups = new ArrayList<>();
-        List<List<Map<String, String>>> childs = new ArrayList<>();
-
-        for (int i = 0; i < categories.length; i++) {
-            Map<String, String> group = new HashMap<>();
-            group.put("group", categories[i]);
-            groups.add(group);
-        }
-
-        List<Map<String, String>> child = new ArrayList<>();
-        for (int i = 0; i < hamburger.length; i++) {
-            Map<String, String> child1Data = new HashMap<>();
-            child1Data.put("child", hamburger[i]);
-            child.add(child1Data);
-        }
-        childs.add(child);
-
-        child = new ArrayList<>();
-        for (int i = 0; i < omelet.length; i++) {
-            Map<String, String> child1Data = new HashMap<>();
-            child1Data.put("child", omelet[i]);
-            child.add(child1Data);//child2Data??????????????????????????????????
-        }
-        childs.add(child);
-
-        elv = (ExpandableListView) findViewById(R.id.mExpandableListView);
-        viewAdapter = new ExpandableAdapter(this, groups, childs);
-        elv.setAdapter(viewAdapter);
+        menuListView = (ListView)findViewById(R.id.list_view);
+        menuListAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,list);
+        menuListView.setAdapter(menuListAdapter);
     }
 
     private void setListeners() {
-        elv.setOnChildClickListener(choose_dish);
+        menuListView.setOnItemClickListener(choose_dish);
     }
-
-    private ExpandableListView.OnChildClickListener choose_dish = new ExpandableListView.OnChildClickListener() {
+    private AdapterView.OnItemClickListener choose_dish = new AdapterView.OnItemClickListener(){
 
         @Override
-        public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
             final View diav = inflater.inflate(R.layout.dia_dish, null);
 
-            final String dish_name = ((Map<String, String>) viewAdapter.getChild(groupPosition, childPosition)).get("child");
+            final String dish_name = menuListAdapter.getItem(position);
             final EditText edtNum = (EditText) diav.findViewById(R.id.edt_ordernum);
             final TextView tvNum = (TextView) diav.findViewById(R.id.tv_ordernum);
 
@@ -163,13 +136,13 @@ public class MainActivity extends AppCompatActivity
                 }
             }
 
-            AlertDialog.Builder dishdialog = new AlertDialog.Builder(MainActivity.this);
-            dishdialog.setTitle(dish_name);
-            dishdialog.setView(diav);
-            dishdialog.setNegativeButton(getResources().getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+            AlertDialog.Builder dishDialog = new AlertDialog.Builder(MainActivity.this);
+            dishDialog.setTitle(dish_name);
+            dishDialog.setView(diav);
+            dishDialog.setNegativeButton(getResources().getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    boolean inListfalg = false;
+                    boolean inListFlag = false;
                     try {
                         for (int i = 0; i < OrderDishList.size(); i++) {//這是不是可以else
 
@@ -177,10 +150,10 @@ public class MainActivity extends AppCompatActivity
                                 int num = OrderDishList.get(i).getNum();
                                 num += Integer.valueOf(edtNum.getText().toString());
                                 OrderDishList.get(i).setNum(num);
-                                inListfalg = true;
+                                inListFlag = true;
                             }
                         }
-                        if (!inListfalg) {
+                        if (!inListFlag) {
                             Dish OD = new Dish(dish_name);
                             OD.setNum(Integer.valueOf(edtNum.getText().toString()));
                             OrderDishList.add(OD);
@@ -190,22 +163,20 @@ public class MainActivity extends AppCompatActivity
                                     String.valueOf(OrderDishList.get(i).getNum()) + "\n");
                         }
                     } catch (Exception obj) {
-                        Toast.makeText(MainActivity.this, R.string.toast_ordererror, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.toast_orderError, Toast.LENGTH_SHORT).show();
                     }
                 }
             });
-            dishdialog.setPositiveButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+            dishDialog.setPositiveButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
                 }
             });
-            dishdialog.show();
-
-            return false;
+            dishDialog.show();
         }
     };
-
+/*
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -214,7 +185,7 @@ public class MainActivity extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
-    }
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -232,30 +203,30 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_settable:
                 LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
                 final View diav = inflater.inflate(R.layout.dia_tablenum, null);
-                final TextView tvNum = (TextView) diav.findViewById(R.id.tv_tablenum);
-                final EditText edtNum = (EditText) diav.findViewById(R.id.edt_tablenum);
+                final TextView tvNum = (TextView) diav.findViewById(R.id.tv_tableNum);
+                final EditText edtNum = (EditText) diav.findViewById(R.id.edt_tableNum);
 
-                AlertDialog.Builder tabledialog = new AlertDialog.Builder(MainActivity.this);
-                tvNum.setText(String.valueOf(tablenum));
-                tabledialog.setView(diav);
-                tabledialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                AlertDialog.Builder tableDialog = new AlertDialog.Builder(MainActivity.this);
+                tvNum.setText(String.valueOf(tableNum));
+                tableDialog.setView(diav);
+                tableDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         try {
-                            tablenum = Integer.valueOf(edtNum.getText().toString());
-                            Toast.makeText(MainActivity.this, "目前桌號為: " + String.valueOf(tablenum), Toast.LENGTH_SHORT).show();
+                            tableNum = Integer.valueOf(edtNum.getText().toString());
+                            Toast.makeText(MainActivity.this, R.string.table_num + String.valueOf(tableNum), Toast.LENGTH_SHORT).show();
                         } catch (Exception obj) {
-                            Toast.makeText(MainActivity.this, R.string.toast_tableerror, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, R.string.toast_tableError, Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
-                tabledialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                tableDialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
                     }
                 });
-                tabledialog.show();
+                tableDialog.show();
                 break;
             case R.id.action_bell:
                 Thread t = new Thread() {
@@ -267,7 +238,7 @@ public class MainActivity extends AppCompatActivity
 
                             bw.write(3);
                             bw.flush();
-                            bw.write(tablenum);
+                            bw.write(tableNum);
                             bw.flush();
                             socket.close();
                         } catch (IOException e) {
@@ -288,7 +259,7 @@ public class MainActivity extends AppCompatActivity
         }
         return super.onOptionsItemSelected(item);
     }
-
+/*
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -310,7 +281,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
+    }*/
 
 
     private void alreadyOrder() {
