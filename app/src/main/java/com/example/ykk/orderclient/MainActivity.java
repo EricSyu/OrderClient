@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity
     String[] categories = {"漢堡類", "蛋餅類"};
     static String[] hamburger = {"火腿蛋堡 $30", "培根蛋堡 $30"};
     String[] omelet = {"原味蛋餅 $30"};
+    //int[] hamPrice = {30, 30};
+    //int[] omePrice = {30};
     LinkedList<OrderDish> OrderDishList = new LinkedList<>();
 
     private ExpandableListView elv;
@@ -104,7 +106,7 @@ public class MainActivity extends AppCompatActivity
         for (int i = 0; i < omelet.length; i++) {
             Map<String, String> child1Data = new HashMap<>();
             child1Data.put("child", omelet[i]);
-            child.add(child1Data);
+            child.add(child1Data);//child2Data??????????????????????????????????
         }
         childs.add(child);
 
@@ -152,7 +154,7 @@ public class MainActivity extends AppCompatActivity
                                     String.valueOf(OrderDishList.get(i).getNum()) + "\n");
                         }
                     } catch (Exception obj){
-                        Toast.makeText(MainActivity.this, "請輸入所需的數量", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.toast_no_count, Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -232,7 +234,12 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case R.id.action_order:
-                alreadyOrder();
+                if(OrderDishList.size() == 0){
+                    Toast.makeText(MainActivity.this, R.string.toast_no_order , Toast.LENGTH_SHORT).show();
+                }else {
+                    alreadyOrder();
+                }
+
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -270,9 +277,12 @@ public class MainActivity extends AppCompatActivity
         listView.setFadingEdgeLength(0);
 
         ArrayList<String> orderList = new ArrayList<>();
+
         for (int i = 0; i < OrderDishList.size(); i++) {
-            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getNum()) );
+            //price =
+            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getNum()) + " = $" );
         }
+
 
         listAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,orderList);
         listView.setAdapter(listAdapter);

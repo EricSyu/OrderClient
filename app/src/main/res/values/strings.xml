@@ -17,4 +17,7 @@
     <string name="dialog_already_title">已點菜單</string>
     <string name="dialog_already_sent">送出</string>
 
+    <!--  Toast -->
+    <string name="toast_no_count">請輸入所需的數量</string>
+    <string name="toast_no_order">您尚未點餐</string>
 </resources>
