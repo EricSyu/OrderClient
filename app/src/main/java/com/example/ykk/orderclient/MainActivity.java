@@ -18,13 +18,16 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.DataOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,17 +40,19 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    static int port = 6000;
+    static String Server_IP = "192.168.1.106";
+
     String[] categories = {"漢堡類", "蛋餅類"};
     static String[] hamburger = {"火腿蛋堡 $30", "培根蛋堡 $30"};
     String[] omelet = {"原味蛋餅 $30"};
-    //int[] hamPrice = {30, 30};
-    //int[] omePrice = {30};
-    LinkedList<OrderDish> OrderDishList = new LinkedList<>();
+
+    ArrayList<Dish> MenuList = new ArrayList<>();
+    LinkedList<Dish> OrderDishList = new LinkedList<>();
     int tablenum = 0;
 
     private ExpandableListView elv;
     private ExpandableAdapter viewAdapter;
-
 
     //already order
     private ArrayAdapter<String> listAdapter;
@@ -68,21 +73,41 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-//        ClientHandler SocketConnect = new ClientHandler();
-//        SocketConnect.start();
-//        try {
-//            SocketConnect.sleep(1000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
 
+        setMenu();
         initViews();
         setListeners();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private void setMenu(){
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Socket socket = new Socket(Server_IP, port);
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                    BufferedReader br=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    int menu_num = 0;
+
+                    bw.write(1);
+                    bw.flush();
+
+                    menu_num = br.read();
+                    for(int i = 0; i < menu_num; i++){
+                        String dish_name = br.readLine();
+                        int dish_price = br.read();
+                        Dish dish = new Dish(dish_name);
+                        dish.setPrice(dish_price);
+                        MenuList.add(dish);
+                    }
+                    socket.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        thread.start();
     }
 
     private void initViews() {
@@ -129,8 +154,8 @@ public class MainActivity extends AppCompatActivity
             final View diav = inflater.inflate(R.layout.dia_dish, null);
 
             final String dish_name = ((Map<String, String>) viewAdapter.getChild(groupPosition, childPosition)).get("child");
-            final EditText edtNum = (EditText)diav.findViewById(R.id.edt_ordernum);
-            final TextView tvNum = (TextView)diav.findViewById(R.id.tv_ordernum);
+            final EditText edtNum = (EditText) diav.findViewById(R.id.edt_ordernum);
+            final TextView tvNum = (TextView) diav.findViewById(R.id.tv_ordernum);
 
             for (int i = 0; i < OrderDishList.size(); i++) {
                 if (OrderDishList.get(i).getName() == dish_name) {
@@ -145,7 +170,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     boolean inListfalg = false;
-                    try{
+                    try {
                         for (int i = 0; i < OrderDishList.size(); i++) {//這是不是可以else
 
                             if (OrderDishList.get(i).getName() == dish_name) {
@@ -156,7 +181,8 @@ public class MainActivity extends AppCompatActivity
                             }
                         }
                         if (!inListfalg) {
-                            OrderDish OD = new OrderDish(dish_name, Integer.valueOf(edtNum.getText().toString()));
+                            Dish OD = new Dish(dish_name);
+                            OD.setNum(Integer.valueOf(edtNum.getText().toString()));
                             OrderDishList.add(OD);
                         }
                         for (int i = 0; i < OrderDishList.size(); i++) {
@@ -206,8 +232,8 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_settable:
                 LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
                 final View diav = inflater.inflate(R.layout.dia_tablenum, null);
-                final TextView tvNum = (TextView)diav.findViewById(R.id.tv_tablenum);
-                final EditText edtNum = (EditText)diav.findViewById(R.id.edt_tablenum);
+                final TextView tvNum = (TextView) diav.findViewById(R.id.tv_tablenum);
+                final EditText edtNum = (EditText) diav.findViewById(R.id.edt_tablenum);
 
                 AlertDialog.Builder tabledialog = new AlertDialog.Builder(MainActivity.this);
                 tvNum.setText(String.valueOf(tablenum));
@@ -215,10 +241,10 @@ public class MainActivity extends AppCompatActivity
                 tabledialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        try{
+                        try {
                             tablenum = Integer.valueOf(edtNum.getText().toString());
                             Toast.makeText(MainActivity.this, "目前桌號為: " + String.valueOf(tablenum), Toast.LENGTH_SHORT).show();
-                        }catch (Exception obj){
+                        } catch (Exception obj) {
                             Toast.makeText(MainActivity.this, R.string.toast_tableerror, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -236,45 +262,26 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void run() {
                         try {
-                            Socket s = new Socket("192.168.1.106", 6000);
-                            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-                            dos.writeUTF("服務鈴");
-                            dos.flush();
-                            dos.close();
-                            s.close();
+                            Socket socket = new Socket(Server_IP, port);
+                            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+
+                            bw.write(3);
+                            bw.flush();
+                            bw.write(tablenum);
+                            bw.flush();
+                            socket.close();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
                 };
                 t.start();
-//                if (!ClientHandler.Client_socket.isConnected()) {
-//                    ClientHandler SocketConnect = new ClientHandler();
-//                    SocketConnect.start();
-//                }
-//                if (ClientHandler.Client_socket.isConnected()) {// 確認socket在連通狀態下
-//                    try {
-//                        DataOutputStream dos = new DataOutputStream(ClientHandler.Client_socket.getOutputStream());
-//                        dos.writeUTF("服務鈴");
-//                        dos.flush();
-//                        dos.close();
-//                        ClientHandler.Client_socket.close();
-//
-//                        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(ClientHandler.Client_socket.getOutputStream()));// 寫入的Buffer
-//                        bw.write("服務鈴1");
-//                        bw.flush();
-//
-//                        Toast.makeText(this, "服務鈴", Toast.LENGTH_SHORT).show();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
                 break;
 
             case R.id.action_order:
-                if(OrderDishList.size() == 0){
-                    Toast.makeText(MainActivity.this, R.string.toast_no_order , Toast.LENGTH_SHORT).show();
-                }else {
+                if (OrderDishList.size() == 0) {
+                    Toast.makeText(MainActivity.this, R.string.toast_no_order, Toast.LENGTH_SHORT).show();
+                } else {
                     alreadyOrder();
                 }
                 break;
@@ -306,7 +313,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void alreadyOrder(){
+    private void alreadyOrder() {
         LinearLayout linearLayoutMain = new LinearLayout(this);//new a layout
         linearLayoutMain.setLayoutParams(new LinearLayoutCompat.LayoutParams(
                 LinearLayoutCompat.LayoutParams.MATCH_PARENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT));
@@ -317,11 +324,11 @@ public class MainActivity extends AppCompatActivity
 
         for (int i = 0; i < OrderDishList.size(); i++) {
             //price =
-            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getNum()) + " = $" );
+            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getNum()) + " = $");
         }
 
 
-        listAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,orderList);
+        listAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, orderList);
         listView.setAdapter(listAdapter);
 
         linearLayoutMain.addView(listView);//add listView into current context
@@ -334,7 +341,7 @@ public class MainActivity extends AppCompatActivity
                         // ++++ 送出
                     }
                 })
-                .setPositiveButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener(){
+                .setPositiveButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface alreadyDialog, int which) {
                         alreadyDialog.cancel();
