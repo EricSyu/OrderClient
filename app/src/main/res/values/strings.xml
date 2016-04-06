@@ -7,8 +7,12 @@
     <!-- toolbar  -->
     <string name="action_order">Order</string>
     <string name="action_bell">Bell</string>
+    <string name="aciton_settable">Settable</string>
 
     <string name="dialog_title">請點餐</string>
     <string name="dialog_ok">確認</string>
     <string name="dialog_cancel">取消</string>
+
+    <string name="toast_ordererror">請輸入所需的數量</string>
+    <string name="toast_tableerror">桌號欄不可為空</string>
 </resources>

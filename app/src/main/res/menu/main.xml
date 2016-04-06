@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_order"
         android:icon="@drawable/order"
         android:title="@string/action_order"
         app:showAsAction="ifRoom" />
@@ -12,5 +12,9 @@
         android:icon="@drawable/bell"
         app:showAsAction="ifRoom"
         android:title="@string/action_bell" />
-
+    <item
+        android:id="@+id/action_settable"
+        android:icon="@drawable/table"
+        app:showAsAction="ifRoom"
+        android:title="@string/aciton_settable" />
 </menu>

@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.DataOutputStream;
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity
     static String[] hamburger = {"火腿蛋堡 $30", "培根蛋堡 $30"};
     String[] omelet = {"原味蛋餅 $30"};
     LinkedList<OrderDish> OrderDishList = new LinkedList<>();
+    int tablenum = 0;
 
     private ExpandableListView elv;
     private ExpandableAdapter viewAdapter;
@@ -118,6 +120,13 @@ public class MainActivity extends AppCompatActivity
 
             final String dish_name = ((Map<String, String>) viewAdapter.getChild(groupPosition, childPosition)).get("child");
             final EditText edtNum = (EditText)diav.findViewById(R.id.edt_ordernum);
+            final TextView tvNum = (TextView)diav.findViewById(R.id.tv_ordernum);
+
+            for (int i = 0; i < OrderDishList.size(); i++) {
+                if (OrderDishList.get(i).getName() == dish_name) {
+                    tvNum.setText(String.valueOf(OrderDishList.get(i).getNum()));
+                }
+            }
 
             AlertDialog.Builder dishdialog = new AlertDialog.Builder(MainActivity.this);
             dishdialog.setTitle(dish_name);
@@ -126,7 +135,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     boolean inListfalg = false;
-                    try{
+                    try {
                         for (int i = 0; i < OrderDishList.size(); i++) {
                             if (OrderDishList.get(i).getName() == dish_name) {
                                 int num = OrderDishList.get(i).getNum();
@@ -143,12 +152,12 @@ public class MainActivity extends AppCompatActivity
                             Log.i(TAG, "Dish in the List : " + OrderDishList.get(i).getName() + " " +
                                     String.valueOf(OrderDishList.get(i).getNum()) + "\n");
                         }
-                    } catch (Exception obj){
-                        Toast.makeText(MainActivity.this, "請輸入所需的數量", Toast.LENGTH_SHORT).show();
+                    } catch (Exception obj) {
+                        Toast.makeText(MainActivity.this, R.string.toast_ordererror, Toast.LENGTH_SHORT).show();
                     }
                 }
             });
-            dishdialog.setPositiveButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener(){
+            dishdialog.setPositiveButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
@@ -183,6 +192,34 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
+            case R.id.action_settable:
+                LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+                final View diav = inflater.inflate(R.layout.dia_tablenum, null);
+
+                final TextView tvNum = (TextView)diav.findViewById(R.id.tv_tablenum);
+                final EditText edtNum = (EditText)diav.findViewById(R.id.edt_tablenum);
+                AlertDialog.Builder tabledialog = new AlertDialog.Builder(MainActivity.this);
+                tvNum.setText(String.valueOf(tablenum));
+                tabledialog.setView(diav);
+                tabledialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        try{
+                            tablenum = Integer.valueOf(edtNum.getText().toString());
+                            Toast.makeText(MainActivity.this, "目前桌號為: " + String.valueOf(tablenum), Toast.LENGTH_SHORT).show();
+                        }catch (Exception obj){
+                            Toast.makeText(MainActivity.this, R.string.toast_tableerror, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                tabledialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                tabledialog.show();
+                break;
             case R.id.action_bell:
                 Thread t = new Thread() {
                     @Override
@@ -223,8 +260,7 @@ public class MainActivity extends AppCompatActivity
 //                }
                 break;
 
-            case R.id.action_settings:
-                initViews();
+            case R.id.action_order:
                 break;
         }
         return super.onOptionsItemSelected(item);
