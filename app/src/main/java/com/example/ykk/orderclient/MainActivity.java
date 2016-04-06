@@ -8,15 +8,19 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.DataOutputStream;
@@ -36,11 +40,17 @@ public class MainActivity extends AppCompatActivity
     String[] categories = {"漢堡類", "蛋餅類"};
     static String[] hamburger = {"火腿蛋堡 $30", "培根蛋堡 $30"};
     String[] omelet = {"原味蛋餅 $30"};
+    //int[] hamPrice = {30, 30};
+    //int[] omePrice = {30};
     LinkedList<OrderDish> OrderDishList = new LinkedList<>();
     int tablenum = 0;
 
     private ExpandableListView elv;
     private ExpandableAdapter viewAdapter;
+
+
+    //already order
+    private ArrayAdapter<String> listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +108,7 @@ public class MainActivity extends AppCompatActivity
         for (int i = 0; i < omelet.length; i++) {
             Map<String, String> child1Data = new HashMap<>();
             child1Data.put("child", omelet[i]);
-            child.add(child1Data);
+            child.add(child1Data);//child2Data??????????????????????????????????
         }
         childs.add(child);
 
@@ -135,8 +145,9 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     boolean inListfalg = false;
-                    try {
-                        for (int i = 0; i < OrderDishList.size(); i++) {
+                    try{
+                        for (int i = 0; i < OrderDishList.size(); i++) {//這是不是可以else
+
                             if (OrderDishList.get(i).getName() == dish_name) {
                                 int num = OrderDishList.get(i).getNum();
                                 num += Integer.valueOf(edtNum.getText().toString());
@@ -195,9 +206,9 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_settable:
                 LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
                 final View diav = inflater.inflate(R.layout.dia_tablenum, null);
-
                 final TextView tvNum = (TextView)diav.findViewById(R.id.tv_tablenum);
                 final EditText edtNum = (EditText)diav.findViewById(R.id.edt_tablenum);
+
                 AlertDialog.Builder tabledialog = new AlertDialog.Builder(MainActivity.this);
                 tvNum.setText(String.valueOf(tablenum));
                 tabledialog.setView(diav);
@@ -261,6 +272,11 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case R.id.action_order:
+                if(OrderDishList.size() == 0){
+                    Toast.makeText(MainActivity.this, R.string.toast_no_order , Toast.LENGTH_SHORT).show();
+                }else {
+                    alreadyOrder();
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -288,4 +304,44 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+    private void alreadyOrder(){
+        LinearLayout linearLayoutMain = new LinearLayout(this);//new a layout
+        linearLayoutMain.setLayoutParams(new LinearLayoutCompat.LayoutParams(
+                LinearLayoutCompat.LayoutParams.MATCH_PARENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT));
+        ListView listView = new ListView(this);//get current context
+        listView.setFadingEdgeLength(0);
+
+        ArrayList<String> orderList = new ArrayList<>();
+
+        for (int i = 0; i < OrderDishList.size(); i++) {
+            //price =
+            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getNum()) + " = $" );
+        }
+
+
+        listAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,orderList);
+        listView.setAdapter(listAdapter);
+
+        linearLayoutMain.addView(listView);//add listView into current context
+
+        final AlertDialog alreadyDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_already_title).setView(linearLayoutMain)//add into dialog
+                .setNegativeButton(getResources().getString(R.string.dialog_already_sent), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface alreadyDialog, int which) {
+                        // ++++ 送出
+                    }
+                })
+                .setPositiveButton(getResources().getString(R.string.dialog_cancel), new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface alreadyDialog, int which) {
+                        alreadyDialog.cancel();
+                    }
+                }).create();
+
+        alreadyDialog.show();
+    }
 }
+
