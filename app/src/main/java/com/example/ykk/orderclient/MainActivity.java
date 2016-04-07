@@ -50,45 +50,14 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        SetMenu thread = new SetMenu(Server_IP,port);
+        SetMenu thread = new SetMenu(Server_IP, port, menuListAdapter);
         thread.start();
 
         initViews();
         setListeners();
     }
 
-//    private void setMenu() {
-//        Thread thread = new Thread() {
-//            @Override
-//            public void run() {
-//                try {
-//                    Socket socket = new Socket(Server_IP, port);
-//                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-//                    BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//                    int menu_num = 0;
-//
-//                    bw.write(1);
-//                    bw.flush();
-//
-//                    menu_num = br.read();
-//                    for (int i = 0; i < menu_num; i++) {
-//                        String dish_name = br.readLine();
-//                        int dish_price = br.read();
-//                        Dish dish = new Dish(dish_name, dish_price, 0);
-//                        MenuList.add(dish);
-//                    }
-//                    socket.close();
-//
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        };
-//        thread.start();
-//    }
-
     private void initViews() {
-
         menuListView = (ListView) findViewById(R.id.list_view);
         menuListAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
         menuListView.setAdapter(menuListAdapter);
@@ -322,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
                             setTableNumDialog();
                         } else {
-                            AlertDialog.Builder confirmDialog = new  AlertDialog.Builder(MainActivity.this);
+                            AlertDialog.Builder confirmDialog = new AlertDialog.Builder(MainActivity.this);
                             confirmDialog.setTitle(R.string.dialog_confirm_title);
                             confirmDialog.setMessage(R.string.dialog_confirm_msg);
                             confirmDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {

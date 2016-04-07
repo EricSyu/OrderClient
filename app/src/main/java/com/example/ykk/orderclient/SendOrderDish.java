@@ -34,11 +34,10 @@ public class SendOrderDish extends Thread {
             bw.write(OrderDishList.size());
             bw.flush();
             for (int i = 0; i < OrderDishList.size(); i++) {
-                bw.write(OrderDishList.get(i).getName());
-                bw.flush();
-                bw.write(OrderDishList.get(i).getAmount());
+                bw.write(OrderDishList.get(i).getName() + "x" + String.valueOf(OrderDishList.get(i).getAmount()));
                 bw.flush();
             }
+            /*******************++++++總價*********************/
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();

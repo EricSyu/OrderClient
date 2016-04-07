@@ -1,5 +1,6 @@
 package com.example.ykk.orderclient;
 
+import android.widget.ArrayAdapter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,10 +14,12 @@ import java.net.Socket;
 public class SetMenu extends Thread {
     private String Server_IP;
     private int port;
+    private ArrayAdapter<String> menuListAdapter;
 
-    public SetMenu(String Server_IP, int port) {
+    public SetMenu(String Server_IP, int port, ArrayAdapter<String> menuListAdapter) {
         this.Server_IP = Server_IP;
         this.port = port;
+        this.menuListAdapter = menuListAdapter;
     }
 
     @Override
@@ -38,6 +41,8 @@ public class SetMenu extends Thread {
                 MainActivity.MenuList.add(dish);
             }
             socket.close();
+
+            menuListAdapter.notifyDataSetChanged();
 
         } catch (IOException e) {
             e.printStackTrace();
