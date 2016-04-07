@@ -30,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    static String Server_IP = "192.168.1.106";
-    static int port = 6000;
+    static String Server_IP = "172..20.10.2";
+    static int port = 1212;
 
     public static ArrayList<Dish> MenuList = new ArrayList<>();
     LinkedList<Dish> OrderDishList = new LinkedList<>();
@@ -262,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 try {
                     TableNum = Integer.valueOf(edtNum.getText().toString());
-                    Toast.makeText(MainActivity.this, R.string.toast_table + String.valueOf(TableNum), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, String.valueOf(R.string.toast_table) + String.valueOf(TableNum), Toast.LENGTH_SHORT).show();
                 } catch (Exception obj) {
                     Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
                 }
@@ -290,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
         int totalPrice = 0;
         for (int i = 0; i < OrderDishList.size(); i++) {
             price = OrderDishList.get(i).getPrice() * OrderDishList.get(i).getAmount();
+            Log.e(TAG, String.valueOf(OrderDishList.get(i).getPrice()) + "   " + String.valueOf(OrderDishList.get(i).getAmount()));
             orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getAmount()) + " = $" + price);
             totalPrice += price;
         }
