@@ -22,12 +22,6 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -36,10 +30,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    static int port = 6000;
     static String Server_IP = "192.168.1.106";
+    static int port = 6000;
 
-    ArrayList<Dish> MenuList = new ArrayList<>();
+    public static ArrayList<Dish> MenuList = new ArrayList<>();
     LinkedList<Dish> OrderDishList = new LinkedList<>();
     int TableNum = 0;
     boolean OrderFlag = true;
@@ -56,40 +50,42 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        setMenu();
+        SetMenu thread = new SetMenu(Server_IP,port);
+        thread.start();
+
         initViews();
         setListeners();
     }
 
-    private void setMenu() {
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    Socket socket = new Socket(Server_IP, port);
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                    BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    int menu_num = 0;
-
-                    bw.write(1);
-                    bw.flush();
-
-                    menu_num = br.read();
-                    for (int i = 0; i < menu_num; i++) {
-                        String dish_name = br.readLine();
-                        int dish_price = br.read();
-                        Dish dish = new Dish(dish_name, dish_price, 0);
-                        MenuList.add(dish);
-                    }
-                    socket.close();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        thread.start();
-    }
+//    private void setMenu() {
+//        Thread thread = new Thread() {
+//            @Override
+//            public void run() {
+//                try {
+//                    Socket socket = new Socket(Server_IP, port);
+//                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+//                    BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//                    int menu_num = 0;
+//
+//                    bw.write(1);
+//                    bw.flush();
+//
+//                    menu_num = br.read();
+//                    for (int i = 0; i < menu_num; i++) {
+//                        String dish_name = br.readLine();
+//                        int dish_price = br.read();
+//                        Dish dish = new Dish(dish_name, dish_price, 0);
+//                        MenuList.add(dish);
+//                    }
+//                    socket.close();
+//
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        };
+//        thread.start();
+//    }
 
     private void initViews() {
 
@@ -244,23 +240,7 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
                             setTableNumDialog();
                         } else {
-                            Thread thread = new Thread() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        Socket socket = new Socket(Server_IP, port);
-                                        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-                                        bw.write(3);
-                                        bw.flush();
-                                        bw.write(TableNum);
-                                        bw.flush();
-                                        socket.close();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            };
+                            SendBell thread = new SendBell(Server_IP, port, TableNum);
                             thread.start();
                         }
                     }
@@ -348,31 +328,7 @@ public class MainActivity extends AppCompatActivity {
                             confirmDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    Thread thread = new Thread() {
-                                        @Override
-                                        public void run() {
-                                            try {
-                                                Socket socket = new Socket(Server_IP, port);
-                                                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-                                                bw.write(2);
-                                                bw.flush();
-                                                bw.write(TableNum);
-                                                bw.flush();
-                                                bw.write(OrderDishList.size());
-                                                bw.flush();
-                                                for (int i = 0; i < OrderDishList.size(); i++) {
-                                                    bw.write(OrderDishList.get(i).getName());
-                                                    bw.flush();
-                                                    bw.write(OrderDishList.get(i).getAmount());
-                                                    bw.flush();
-                                                }
-                                                socket.close();
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                    };
+                                    SendOrderDish thread = new SendOrderDish(Server_IP, port, TableNum, OrderDishList);
                                     thread.start();
                                 }
                             });
