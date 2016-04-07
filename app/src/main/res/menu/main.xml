@@ -16,5 +16,5 @@
         android:id="@+id/action_settable"
         android:icon="@drawable/table"
         app:showAsAction="ifRoom"
-        android:title="@string/aciton_settable" />
+        android:title="@string/aciton_setTable" />
 </menu>

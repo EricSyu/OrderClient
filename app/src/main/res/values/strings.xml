@@ -7,25 +7,30 @@
     <!-- toolbar  -->
     <string name="action_order">Order</string>
     <string name="action_bell">Bell</string>
-    <string name="aciton_settable">Settable</string>
+    <string name="aciton_setTable">SetTable</string>
 
     <!-- dialog - order -->
     <string name="dialog_title">請點餐</string>
     <string name="dialog_ok">確認</string>
     <string name="dialog_cancel">取消</string>
 
-    <!-- Toast errormsg-->
-    <string name="toast_orderError">請輸入所需的數量</string>
-    <string name="toast_tableError">桌號欄不可為空</string>
+    <!-- dialog - bell -->
+    <string name="dialog_bell_title">服務鈴</string>
+    <string name="dialog_bell_msg">是否按下服務鈴?</string>
 
     <!-- dialog - already order -->
     <string name="dialog_already_title">已點菜單</string>
     <string name="dialog_already_sent">送出</string>
 
-    <!--  Toast -->
-    <string name="toast_no_count">請輸入所需的數量</string>
-    <string name="toast_no_order">您尚未點餐</string>
+    <!-- dialog - confirm -->
+    <string name="dialog_confirm_title">送出菜單</string>
+    <string name="dialog_confirm_msg">是否送出菜單?</string>
 
-    <string name="table_num">目前桌號為: </string>
+    <!--  Toast -->
+    <string name="toast_no_amount">請輸入所需的數量</string>
+    <string name="toast_no_order">您尚未點餐</string>
+    <string name="toast_no_tablenum">請先輸入桌號</string>
+
+    <string name="toast_table">目前桌號為: </string>
 
 </resources>

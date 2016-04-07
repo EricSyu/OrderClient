@@ -12,31 +12,6 @@
 
         <LinearLayout
             android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="0.08"
-            android:weightSum="1">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="價格: "
-                android:textSize="18sp"
-                android:id="@+id/textView2"
-                android:layout_weight="0.16" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:text="30"
-                android:id="@+id/textView3" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:weightSum="1">
@@ -68,20 +43,21 @@
             <RadioGroup
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:id="@+id/rgroup">
 
                 <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="點餐"
-                    android:id="@+id/rb_order"
+                    android:id="@+id/rb_Order"
                     android:checked="true" />
 
                 <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="取消餐點"
-                    android:id="@+id/rb_cancelorder"
+                    android:id="@+id/rb_CancelOrder"
                     android:layout_gravity="center_horizontal"
                     android:checked="false" />
 
