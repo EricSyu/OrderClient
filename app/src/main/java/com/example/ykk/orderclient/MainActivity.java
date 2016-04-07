@@ -31,8 +31,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class MainActivity extends AppCompatActivity{
-        //implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity {
+    //implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity{
 
     //Menu ListView
     private ListView menuListView;
-    private String[] list = {"火腿蛋堡 $30","培根蛋堡 $30","原味蛋餅 $30" };
+    private String[] list = {"火腿蛋堡 $30", "培根蛋堡 $30", "原味蛋餅 $30"};
     private ArrayAdapter<String> menuListAdapter;
 
     @Override
@@ -93,15 +93,16 @@ public class MainActivity extends AppCompatActivity{
 
     private void initViews() {
 
-        menuListView = (ListView)findViewById(R.id.list_view);
-        menuListAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,list);
+        menuListView = (ListView) findViewById(R.id.list_view);
+        menuListAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
         menuListView.setAdapter(menuListAdapter);
     }
 
     private void setListeners() {
         menuListView.setOnItemClickListener(choose_dish);
     }
-    private AdapterView.OnItemClickListener choose_dish = new AdapterView.OnItemClickListener(){
+
+    private AdapterView.OnItemClickListener choose_dish = new AdapterView.OnItemClickListener() {
 
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -337,33 +338,52 @@ public class MainActivity extends AppCompatActivity{
                 .setNegativeButton(getResources().getString(R.string.dialog_already_sent), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface alreadyDialog, int which) {
-                        //送出菜單
-                        Thread thread = new Thread() {
-                            @Override
-                            public void run() {
-                                try {
-                                    Socket socket = new Socket(Server_IP, port);
-                                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                        if (TableNum == 0) {
+                            Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
+                            setTableNumDialog();
+                        } else {
+                            AlertDialog.Builder confirmDialog = new  AlertDialog.Builder(MainActivity.this);
+                            confirmDialog.setTitle(R.string.dialog_confirm_title);
+                            confirmDialog.setMessage(R.string.dialog_confirm_msg);
+                            confirmDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Thread thread = new Thread() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                Socket socket = new Socket(Server_IP, port);
+                                                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
-                                    bw.write(2);
-                                    bw.flush();
-                                    bw.write(TableNum);
-                                    bw.flush();
-                                    bw.write(OrderDishList.size());
-                                    bw.flush();
-                                    for (int i = 0; i < OrderDishList.size(); i++) {
-                                        bw.write(OrderDishList.get(i).getName());
-                                        bw.flush();
-                                        bw.write(OrderDishList.get(i).getAmount());
-                                        bw.flush();
-                                    }
-                                    socket.close();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
+                                                bw.write(2);
+                                                bw.flush();
+                                                bw.write(TableNum);
+                                                bw.flush();
+                                                bw.write(OrderDishList.size());
+                                                bw.flush();
+                                                for (int i = 0; i < OrderDishList.size(); i++) {
+                                                    bw.write(OrderDishList.get(i).getName());
+                                                    bw.flush();
+                                                    bw.write(OrderDishList.get(i).getAmount());
+                                                    bw.flush();
+                                                }
+                                                socket.close();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    };
+                                    thread.start();
                                 }
-                            }
-                        };
-                        thread.start();
+                            });
+                            confirmDialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            });
+                            confirmDialog.show();
+                        }
                     }
                 })
                 .setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
