@@ -6,12 +6,12 @@ package com.example.ykk.orderclient;
 public class Dish {
     private String name;
     private int price;
-    private int num;
+    private int amount;
 
-    public Dish(String name) {
+    public Dish(String name, int price, int amount) {
         this.name = name;
-        this.price = 0;
-        this.num = 0;
+        this.price = price;
+        this.amount = amount;
     }
 
     public String getName() {
@@ -22,15 +22,11 @@ public class Dish {
         return price;
     }
 
-    public int getNum() {
-        return num;
+    public int getAmount() {
+        return amount;
     }
 
-    public void setPrice(int price){
-        this.price = price;
-    }
-
-    public void setNum(int num) {
-        this.num = num;
+    public void setAmount(int amount) {
+        this.amount = amount;
     }
 }

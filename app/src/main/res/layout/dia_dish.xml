@@ -30,8 +30,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="18sp"
-                android:text="30"
-                android:id="@+id/textView3" />
+                android:text="0"
+                android:id="@+id/tv_price" />
 
         </LinearLayout>
 
@@ -68,20 +68,21 @@
             <RadioGroup
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:id="@+id/rgroup">
 
                 <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="點餐"
-                    android:id="@+id/rb_order"
+                    android:id="@+id/rb_Order"
                     android:checked="true" />
 
                 <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="取消餐點"
-                    android:id="@+id/rb_cancelorder"
+                    android:id="@+id/rb_CancelOrder"
                     android:layout_gravity="center_horizontal"
                     android:checked="false" />
 
