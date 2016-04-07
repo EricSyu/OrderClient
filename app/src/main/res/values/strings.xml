@@ -13,6 +13,12 @@
     <string name="dialog_title">請點餐</string>
     <string name="dialog_ok">確認</string>
     <string name="dialog_cancel">取消</string>
+    <string name="dialog_amount">數量 : </string>
+    <string name="dialog_unit_price">價格 : </string>
+    <string name="dialog_zero">0</string>
+    <string name="dialog_current_amount">目前數量 : </string>
+    <string name="dialog_order">點餐</string>
+    <string name="dialog_cancel_order">取消點餐</string>
 
     <!-- dialog - bell -->
     <string name="dialog_bell_title">服務鈴</string>
@@ -31,6 +37,7 @@
     <string name="toast_no_order">您尚未點餐</string>
     <string name="toast_no_tablenum">請先輸入桌號</string>
 
-    <string name="toast_table">目前桌號為: </string>
+    <string name="table_title">桌號</string>
+    <string name="bell_title">服務鈴</string>
 
 </resources>

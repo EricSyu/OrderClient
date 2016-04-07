@@ -13,10 +13,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="@string/table_title"
-            android:id="@+id/dialog_title"
+            android:text="@string/bell_title"
+            android:id="@+id/bell_title"
             android:textSize="30sp"
-            android:background="#A0522D"
+            android:background="#FFBB00"
             android:textStyle="bold"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"
@@ -27,56 +27,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:layout_marginBottom="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20dp"
-                android:text="目前桌號為: "
+                android:textSize="25dp"
+                android:text="@string/dialog_bell_msg"
                 android:id="@+id/textView5"
                 android:textStyle="bold"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="20dp"
-                android:text="0"
-                android:id="@+id/tv_tableNum"
-                android:textStyle="bold" />
         </LinearLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:weightSum="1"
-            android:gravity="center_vertical"
-            android:layout_marginTop="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="請輸入桌號:"
-                android:textSize="20dp"
-                android:id="@+id/textView6"
-                android:layout_weight="0.14"
-                android:textStyle="bold"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp" />
-
-            <EditText
-                android:layout_width="88dp"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:ems="10"
-                android:id="@+id/edt_tableNum"
-                android:textStyle="bold" />
-        </LinearLayout>
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"

@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -95,9 +96,12 @@ public class MainActivity extends AppCompatActivity{
             final View diav = inflater.inflate(R.layout.dia_order_dish, null);
 
             final String dish_name = menuListAdapter.getItem(position);
+            final TextView diaTitle = (TextView) diav.findViewById(R.id.dialog_title);
             final EditText edtNum = (EditText) diav.findViewById(R.id.edt_ordernum);
             final TextView tvNum = (TextView) diav.findViewById(R.id.tv_ordernum);
             final RadioGroup rgroup = (RadioGroup) diav.findViewById(R.id.rgroup);
+            final Button okBtn = (Button) diav.findViewById(R.id.button_ok);
+            final Button cancelBtn = (Button) diav.findViewById(R.id.button_cancel);
 
             rgroup.setOnCheckedChangeListener(RGlistener);
 
@@ -107,13 +111,16 @@ public class MainActivity extends AppCompatActivity{
                 }
             }
 
-            AlertDialog.Builder dishDialog = new AlertDialog.Builder(MainActivity.this);
-            dishDialog.setTitle(dish_name);
+            diaTitle.setText(dish_name);
+
+            final AlertDialog.Builder dishDialog = new AlertDialog.Builder(MainActivity.this);
             dishDialog.setView(diav);
-            dishDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            final AlertDialog dialog = dishDialog.show();
+            okBtn.setOnClickListener(new Button.OnClickListener() {
 
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onClick(View v) {
+                    Log.e(TAG, "in");
                     boolean inListFlag = false;
                     try {
                         Log.d(TAG, String.valueOf(OrderFlag));
@@ -161,15 +168,17 @@ public class MainActivity extends AppCompatActivity{
                     } catch (Exception obj) {
                         Toast.makeText(MainActivity.this, R.string.toast_no_amount, Toast.LENGTH_SHORT).show();
                     }
+                    dialog.cancel();
                 }
             });
-            dishDialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
 
+            cancelBtn.setOnClickListener(new Button.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    dialog.cancel();
                 }
             });
-            dishDialog.show();
         }
     };
 
@@ -217,10 +226,40 @@ public class MainActivity extends AppCompatActivity{
                 break;
 
             case R.id.action_bell:
-                AlertDialog.Builder belldilog = new AlertDialog.Builder(MainActivity.this);
-                belldilog.setTitle(R.string.dialog_bell_title);
-                belldilog.setMessage(R.string.dialog_bell_msg);
-                belldilog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+                final View diav = inflater.inflate(R.layout.dia_bell, null);
+
+                final Button okBtn = (Button) diav.findViewById(R.id.button_table_ok);
+                final Button cancelBtn = (Button) diav.findViewById(R.id.button_table_cancel);
+
+                final AlertDialog.Builder bellDilog = new AlertDialog.Builder(MainActivity.this);
+                bellDilog.setView(diav);
+                final AlertDialog dialog = bellDilog.show();
+
+                okBtn.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (TableNum == 0) {
+                            Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
+                            setTableNumDialog();
+                        } else {
+                            SendBell thread = new SendBell(Server_IP, port, TableNum);
+                            thread.start();
+                        }
+                        dialog.cancel();
+                    }
+                });
+                cancelBtn.setOnClickListener(new Button.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        dialog.cancel();
+                    }
+                });
+                //belldilog.setTitle(R.string.dialog_bell_title);
+                //belldilog.setMessage(R.string.dialog_bell_msg);
+                /*
+                bellDilog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (TableNum == 0) {
@@ -232,13 +271,14 @@ public class MainActivity extends AppCompatActivity{
                         }
                     }
                 });
-                belldilog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                bellDilog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
                     }
                 });
-                belldilog.show();
+                bellDilog.show();*/
+
                 break;
 
             case R.id.action_order:
@@ -257,30 +297,38 @@ public class MainActivity extends AppCompatActivity{
     public void setTableNumDialog() {
         LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
         final View diav = inflater.inflate(R.layout.dia_tablenum, null);
+
         final TextView tvNum = (TextView) diav.findViewById(R.id.tv_tableNum);
         final EditText edtNum = (EditText) diav.findViewById(R.id.edt_tableNum);
+        final Button okBtn = (Button) diav.findViewById(R.id.button_table_ok);
+        final Button cancelBtn = (Button) diav.findViewById(R.id.button_table_cancel);
 
-        AlertDialog.Builder tabledialog = new AlertDialog.Builder(MainActivity.this);
+        final AlertDialog.Builder tableDialog = new AlertDialog.Builder(MainActivity.this);
         tvNum.setText(String.valueOf(TableNum));
-        tabledialog.setView(diav);
-        tabledialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        tableDialog.setView(diav);
+        final AlertDialog dialog = tableDialog.show();
+
+        okBtn.setOnClickListener(new Button.OnClickListener() {
+
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick(View v) {
                 try {
                     TableNum = Integer.valueOf(edtNum.getText().toString());
-                    Toast.makeText(MainActivity.this, R.string.toast_table + String.valueOf(TableNum), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "目前桌號為: " + String.valueOf(TableNum), Toast.LENGTH_SHORT).show();
                 } catch (Exception obj) {
                     Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
                 }
+                dialog.cancel();
             }
         });
-        tabledialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
+        cancelBtn.setOnClickListener(new Button.OnClickListener() {
 
+            @Override
+            public void onClick(View v) {
+                dialog.cancel();
             }
         });
-        tabledialog.show();
+
     }
 
     private void alreadyOrder() {
@@ -300,12 +348,7 @@ public class MainActivity extends AppCompatActivity{
             totalPrice += price;
         }
         orderList.add("總共： " + totalPrice + " 元");
-/*
-        listAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, orderList);
-            //price =
-            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getAmount()) + " = $");
-        }
-*/
+
         ArrayAdapter<String> listAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, orderList);
         listView.setAdapter(listAdapter);
 
