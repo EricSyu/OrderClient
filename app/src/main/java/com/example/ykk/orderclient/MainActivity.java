@@ -2,8 +2,9 @@ package com.example.ykk.orderclient;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -28,20 +29,19 @@ import java.util.LinkedList;
 
 public class MainActivity extends AppCompatActivity {
 
-
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    static String Server_IP = "172..20.10.2";
+    static String Server_IP = "172.20.10.2";
     static int port = 1212;
 
-    public static ArrayList<Dish> MenuList = new ArrayList<>();
+    public  ArrayList<Dish> MenuList = new ArrayList<Dish>();
     LinkedList<Dish> OrderDishList = new LinkedList<>();
     int TableNum = 0;
     boolean OrderFlag = true;
 
     //Menu ListView
     private ListView menuListView;
-    private ArrayAdapter<String> menuListAdapter;
+    private MyMenulstAdapter myMenulstAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,34 +50,28 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        tryDish();
-        SetMenu thread = new SetMenu(Server_IP, port, menuListAdapter);
-        thread.start();
-
         initViews();
         setListeners();
+
+        SetMenu thread = new SetMenu(Server_IP, port, mHandler, MenuList);
+        thread.start();
     }
 
-    // ------------  假資料  ------------ //
-    private void tryDish() {
-        Dish d = new Dish("火腿蛋堡", 30, 0);
-        MenuList.add(d);
-        Dish dd = new Dish("培根蛋堡", 30, 0);
-        MenuList.add(dd);
-        Dish ddd = new Dish("原味蛋餅", 30, 0);
-        MenuList.add(ddd);
-    }
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch(msg.what){
+                case 1:
+                    myMenulstAdapter.notifyDataSetChanged();
+                    break;
+            }
+        }
+    };
 
     private void initViews() {
         menuListView = (ListView) findViewById(R.id.list_view);
-
-        ArrayList<String> menuArrayList = new ArrayList<>();
-        for (int i = 0; i < MenuList.size(); i++) {
-            menuArrayList.add(MenuList.get(i).getName() + " $" + String.valueOf(MenuList.get(i).getPrice()));
-        }
-
-        menuListAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, menuArrayList);
-        menuListView.setAdapter(menuListAdapter);
+        myMenulstAdapter = new MyMenulstAdapter(this, MenuList);
+        menuListView.setAdapter(myMenulstAdapter);
     }
 
     private void setListeners() {
@@ -87,20 +81,22 @@ public class MainActivity extends AppCompatActivity {
     private AdapterView.OnItemClickListener choose_dish = new AdapterView.OnItemClickListener() {
 
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
             final View diav = inflater.inflate(R.layout.dia_order_dish, null);
 
-            final String dish_name = menuListAdapter.getItem(position);
+            final Dish GetDish = (Dish) myMenulstAdapter.getItem(position);
+            final String dish_name = GetDish.getName();
+            final int dish_price = GetDish.getPrice();
             final EditText edtNum = (EditText) diav.findViewById(R.id.edt_ordernum);
-            final TextView tvNum = (TextView) diav.findViewById(R.id.tv_ordernum);
+            final TextView tvOrderNum = (TextView) diav.findViewById(R.id.tv_ordernum);
             final RadioGroup rgroup = (RadioGroup) diav.findViewById(R.id.rgroup);
 
             rgroup.setOnCheckedChangeListener(RGlistener);
 
             for (int i = 0; i < OrderDishList.size(); i++) {
                 if (OrderDishList.get(i).getName() == dish_name) {
-                    tvNum.setText(String.valueOf(OrderDishList.get(i).getAmount()));
+                    tvOrderNum.setText(String.valueOf(OrderDishList.get(i).getAmount()));
                 }
             }
 
@@ -124,18 +120,12 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                             if (!inListFlag) {
-                                int price = 0;
                                 int amount = Integer.valueOf(edtNum.getText().toString());
-                                for (int i = 0; i < MenuList.size(); i++) {
-                                    if (MenuList.get(i).getName() == dish_name) {
-                                        price = MenuList.get(i).getPrice();
-                                    }
-                                }
-                                Dish OD = new Dish(dish_name, price, amount);
+                                Dish OD = new Dish(dish_name, dish_price, amount);
                                 OrderDishList.add(OD);
                             }
                         } else {
-                            for (int i = 0; i < OrderDishList.size(); i++) {//這是不是可以else
+                            for (int i = 0; i < OrderDishList.size(); i++) {
                                 if (OrderDishList.get(i).getName() == dish_name) {
                                     int num = OrderDishList.get(i).getAmount();
                                     num -= Integer.valueOf(edtNum.getText().toString());
@@ -254,18 +244,18 @@ public class MainActivity extends AppCompatActivity {
     public void setTableNumDialog() {
         LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
         final View diav = inflater.inflate(R.layout.dia_tablenum, null);
-        final TextView tvNum = (TextView) diav.findViewById(R.id.tv_tableNum);
+        final TextView tvTableNum = (TextView) diav.findViewById(R.id.tv_tableNum);
         final EditText edtNum = (EditText) diav.findViewById(R.id.edt_tableNum);
 
         AlertDialog.Builder tabledialog = new AlertDialog.Builder(MainActivity.this);
-        tvNum.setText(String.valueOf(TableNum));
+        tvTableNum.setText(String.valueOf(TableNum));
         tabledialog.setView(diav);
         tabledialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
                     TableNum = Integer.valueOf(edtNum.getText().toString());
-                    Toast.makeText(MainActivity.this, String.valueOf(R.string.toast_table) + String.valueOf(TableNum), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.toast_table + TableNum , Toast.LENGTH_SHORT).show();
                 } catch (Exception obj) {
                     Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
                 }
@@ -348,4 +338,5 @@ public class MainActivity extends AppCompatActivity {
         });
         alreadyDialog.show();
     }
+
 }
