@@ -2,6 +2,7 @@ package com.example.ykk.orderclient;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -241,6 +242,8 @@ public class MainActivity extends AppCompatActivity{
                 break;
 
             case R.id.action_order:
+                //Intent intent = new Intent(MainActivity.this,CustomDialogActivity.class);
+                //startActivity(intent);
                 if (OrderDishList.size() == 0) {
                     Toast.makeText(MainActivity.this, R.string.toast_no_order, Toast.LENGTH_SHORT).show();
                 } else {
