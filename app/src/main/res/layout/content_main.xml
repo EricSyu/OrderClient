@@ -12,9 +12,9 @@
     tools:context="com.example.ykk.orderclient.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <ExpandableListView
+    <ListView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/mExpandableListView" />
+        android:id="@+id/list_view" />
 
 </RelativeLayout>

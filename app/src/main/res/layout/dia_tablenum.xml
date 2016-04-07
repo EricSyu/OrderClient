@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="20dp"
                 android:text="0"
-                android:id="@+id/tv_tablenum" />
+                android:id="@+id/tv_tableNum" />
         </LinearLayout>
 
         <LinearLayout
@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="number"
                 android:ems="10"
-                android:id="@+id/edt_tablenum" />
+                android:id="@+id/edt_tableNum" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

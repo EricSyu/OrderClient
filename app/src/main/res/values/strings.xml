@@ -25,4 +25,6 @@
     <string name="toast_no_order">您尚未點餐</string>
     <string name="toast_no_tablenum">請先輸入桌號</string>
 
+    <string name="table_num">目前桌號為: </string>
+
 </resources>
