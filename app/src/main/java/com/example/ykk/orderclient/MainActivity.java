@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class MainActivity extends AppCompatActivity{
-        //implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -42,7 +41,7 @@ public class MainActivity extends AppCompatActivity{
 
     //Menu ListView
     private ListView menuListView;
-    private String[] list = {"火腿蛋堡 $30","培根蛋堡 $30","原味蛋餅 $30" };
+    //private String[] list = {"火腿蛋堡 $30","培根蛋堡 $30","原味蛋餅 $30" };
     private ArrayAdapter<String> menuListAdapter;
 
     //already order
@@ -55,9 +54,23 @@ public class MainActivity extends AppCompatActivity{
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        tryDish();
         setMenu();
         initViews();
         setListeners();
+    }
+
+    // ------------  假資料  ------------ //
+    private void tryDish(){
+        Dish d = new Dish("火腿蛋堡");
+        d.setPrice(30);
+        MenuList.add(d);
+        Dish dd = new Dish("培根蛋堡");
+        dd.setPrice(30);
+        MenuList.add(dd);
+        Dish ddd = new Dish("原味蛋餅");
+        ddd.setPrice(30);
+        MenuList.add(ddd);
     }
 
     private void setMenu(){
@@ -94,7 +107,13 @@ public class MainActivity extends AppCompatActivity{
     private void initViews() {
 
         menuListView = (ListView)findViewById(R.id.list_view);
-        menuListAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,list);
+
+        ArrayList<String> menuName = new ArrayList<>();
+        for (int i = 0; i < MenuList.size(); i++) {
+            menuName.add(MenuList.get(i).getName() + "  $" + MenuList.get(i).getPrice());
+        }
+
+        menuListAdapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1, menuName);
         menuListView.setAdapter(menuListAdapter);
     }
 
@@ -242,11 +261,24 @@ public class MainActivity extends AppCompatActivity{
 
         ArrayList<String> orderList = new ArrayList<>();
 
+        int price = 0;
+        int totalPrice = 0;
         for (int i = 0; i < OrderDishList.size(); i++) {
-            //price =
-            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getNum()) + " = $");
+            for(int j = 0; j < MenuList.size(); j++){
+                Log.e("點的 ", OrderDishList.get(i).getName());
+                Log.e("菜單 ",  MenuList.get(j).getName());
+                if(OrderDishList.get(i).getName() == MenuList.get(j).getName()){
+                    Log.e("in","in");
+                    Log.isLoggable("數量：", MenuList.get(j).getPrice());
+                    Log.isLoggable("價錢：", OrderDishList.get(i).getNum());
+                    price = OrderDishList.get(i).getNum() * MenuList.get(j).getPrice();
+                    break;
+                }
+            }
+            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getNum()) + " = $" + price);
+            totalPrice += price;
         }
-
+        orderList.add("總共： " + totalPrice + " 元");
 
         listAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, orderList);
         listView.setAdapter(listAdapter);
