@@ -9,8 +9,10 @@
     <string name="action_bell">Bell</string>
     <string name="aciton_setTable">SetTable</string>
 
-    <!-- dialog -  order -->
-    <string name="dialog_order_title">請點餐</string>
+    <!-- dialog - order -->
+    <string name="dialog_title">請點餐</string>
+    <string name="dialog_ok">確認</string>
+    <string name="dialog_cancel">取消</string>
 
     <!-- dialog - bell -->
     <string name="dialog_bell_title">服務鈴</string>
@@ -29,6 +31,6 @@
     <string name="toast_no_order">您尚未點餐</string>
     <string name="toast_no_tablenum">請先輸入桌號</string>
 
-    <string name="table_num">目前桌號為: </string>
+    <string name="toast_table">目前桌號為: </string>
 
 </resources>

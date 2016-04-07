@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class MainActivity extends AppCompatActivity {
-    //implements NavigationView.OnNavigationItemSelectedListener {
+
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -40,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
 
     //Menu ListView
     private ListView menuListView;
-    private String[] list = {"火腿蛋堡 $30", "培根蛋堡 $30", "原味蛋餅 $30"};
     private ArrayAdapter<String> menuListAdapter;
 
     @Override
@@ -50,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        tryDish();
         SetMenu thread = new SetMenu(Server_IP, port, menuListAdapter);
         thread.start();
 
@@ -57,9 +57,25 @@ public class MainActivity extends AppCompatActivity {
         setListeners();
     }
 
+    // ------------  假資料  ------------ //
+    private void tryDish() {
+        Dish d = new Dish("火腿蛋堡", 30, 0);
+        MenuList.add(d);
+        Dish dd = new Dish("培根蛋堡", 30, 0);
+        MenuList.add(dd);
+        Dish ddd = new Dish("原味蛋餅", 30, 0);
+        MenuList.add(ddd);
+    }
+
     private void initViews() {
         menuListView = (ListView) findViewById(R.id.list_view);
-        menuListAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
+
+        ArrayList<String> menuArrayList = new ArrayList<>();
+        for (int i = 0; i < MenuList.size(); i++) {
+            menuArrayList.add(MenuList.get(i).getName() + " $" + String.valueOf(MenuList.get(i).getPrice()));
+        }
+
+        menuListAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, menuArrayList);
         menuListView.setAdapter(menuListAdapter);
     }
 
@@ -78,8 +94,6 @@ public class MainActivity extends AppCompatActivity {
             final EditText edtNum = (EditText) diav.findViewById(R.id.edt_ordernum);
             final TextView tvNum = (TextView) diav.findViewById(R.id.tv_ordernum);
             final RadioGroup rgroup = (RadioGroup) diav.findViewById(R.id.rgroup);
-
-            //final String dish_name = ((Map<String, String>) viewAdapter.getChild(groupPosition, childPosition)).get("child");
 
             rgroup.setOnCheckedChangeListener(RGlistener);
 
@@ -248,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 try {
                     TableNum = Integer.valueOf(edtNum.getText().toString());
-                    Toast.makeText(MainActivity.this, "目前桌號為: " + String.valueOf(TableNum), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.toast_table + String.valueOf(TableNum), Toast.LENGTH_SHORT).show();
                 } catch (Exception obj) {
                     Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
                 }
@@ -272,51 +286,62 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayList<String> orderList = new ArrayList<>();
 
+        int price = 0;
+        int totalPrice = 0;
         for (int i = 0; i < OrderDishList.size(); i++) {
+            price = OrderDishList.get(i).getPrice() * OrderDishList.get(i).getAmount();
+            orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getAmount()) + " = $" + price);
+            totalPrice += price;
+        }
+        orderList.add("總共： " + totalPrice + " 元");
+/*
+        listAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, orderList);
             //price =
             orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getAmount()) + " = $");
         }
-
+*/
         ArrayAdapter<String> listAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, orderList);
         listView.setAdapter(listAdapter);
 
         linearLayoutMain.addView(listView);//add listView into current context
 
-        final AlertDialog alreadyDialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.dialog_already_title).setView(linearLayoutMain)//add into dialog
-                .setNegativeButton(getResources().getString(R.string.dialog_already_sent), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface alreadyDialog, int which) {
-                        if (TableNum == 0) {
-                            Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
-                            setTableNumDialog();
-                        } else {
-                            AlertDialog.Builder confirmDialog = new AlertDialog.Builder(MainActivity.this);
-                            confirmDialog.setTitle(R.string.dialog_confirm_title);
-                            confirmDialog.setMessage(R.string.dialog_confirm_msg);
-                            confirmDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    SendOrderDish thread = new SendOrderDish(Server_IP, port, TableNum, OrderDishList);
-                                    thread.start();
-                                }
-                            });
-                            confirmDialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-
-                                }
-                            });
-                            confirmDialog.show();
+        final AlertDialog.Builder alreadyDialog = new AlertDialog.Builder(this);
+        final int sendPrice = totalPrice;
+        alreadyDialog.setTitle(R.string.dialog_already_title);
+        alreadyDialog.setView(linearLayoutMain);//add into dialog;
+        alreadyDialog.setNegativeButton(getResources().getString(R.string.dialog_already_sent), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface alreadyDialog, int which) {
+                if (TableNum == 0) {
+                    Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
+                    setTableNumDialog();
+                } else {
+                    AlertDialog.Builder confirmDialog = new AlertDialog.Builder(MainActivity.this);
+                    confirmDialog.setTitle(R.string.dialog_confirm_title);
+                    confirmDialog.setMessage(R.string.dialog_confirm_msg);
+                    confirmDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            SendOrderDish thread = new SendOrderDish(Server_IP, port, TableNum, OrderDishList, sendPrice);
+                            thread.start();
                         }
-                    }
-                })
-                .setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface alreadyDialog, int which) {
-                        alreadyDialog.cancel();
-                    }
-                }).create();
+                    });
+                    confirmDialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    confirmDialog.show();
+                }
+            }
+        });
+        alreadyDialog.setPositiveButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface alreadyDialog, int which) {
+                alreadyDialog.cancel();
+            }
+        });
         alreadyDialog.show();
     }
 }

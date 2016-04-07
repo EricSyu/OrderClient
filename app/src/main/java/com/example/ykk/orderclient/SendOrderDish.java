@@ -13,12 +13,14 @@ public class SendOrderDish extends Thread {
     private String Server_IP;
     private int port, TableNum;
     private LinkedList<Dish> OrderDishList;
+    private int price;
 
-    public SendOrderDish(String Server_IP, int port, int TableNum, LinkedList<Dish> OrderDishList) {
+    public SendOrderDish(String Server_IP, int port, int TableNum, LinkedList<Dish> OrderDishList, int price) {
         this.Server_IP = Server_IP;
         this.port = port;
         this.TableNum = TableNum;
         this.OrderDishList = OrderDishList;
+        this.price = price;
     }
 
     @Override
@@ -37,7 +39,9 @@ public class SendOrderDish extends Thread {
                 bw.write(OrderDishList.get(i).getName() + "x" + String.valueOf(OrderDishList.get(i).getAmount()));
                 bw.flush();
             }
-            /*******************++++++總價*********************/
+            bw.write(price);
+            bw.flush();
+
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
