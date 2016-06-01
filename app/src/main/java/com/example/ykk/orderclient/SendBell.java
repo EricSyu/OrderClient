@@ -1,14 +1,17 @@
 package com.example.ykk.orderclient;
 
-import java.io.BufferedWriter;
+import android.util.Log;
+
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 /**
  * Created by Louis on 2016/4/7.
  */
 public class SendBell extends Thread {
+    private static final String TAG = SendBell.class.getSimpleName();
+
     private String Server_IP;
     private int port, TableNum;
 
@@ -21,14 +24,18 @@ public class SendBell extends Thread {
     @Override
     public void run() {
         try {
+            Log.e(TAG, Server_IP + " " + port);
             Socket socket = new Socket(Server_IP, port);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            Log.e(TAG, "Connected");
+            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
-            bw.write(3);
-            bw.flush();
-            bw.write(TableNum);
-            bw.flush();
+            dos.writeInt(3);
+            dos.flush();
+            dos.writeInt(TableNum);
+            dos.flush();
+
             socket.close();
+            Log.e(TAG, "Closed");
         } catch (IOException e) {
             e.printStackTrace();
         }

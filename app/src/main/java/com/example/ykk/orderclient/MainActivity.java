@@ -2,8 +2,9 @@ package com.example.ykk.orderclient;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioGroup;
@@ -27,22 +29,21 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class MainActivity extends AppCompatActivity{
-
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    static String Server_IP = "192.168.1.106";
-    static int port = 6000;
+    static String Server_IP = "172.20.10.2";
+    static int port = 1212;
 
-    public static ArrayList<Dish> MenuList = new ArrayList<>();
+    public  ArrayList<Dish> MenuList = new ArrayList<Dish>();
     LinkedList<Dish> OrderDishList = new LinkedList<>();
     int TableNum = 0;
     boolean OrderFlag = true;
 
     //Menu ListView
     private ListView menuListView;
-    private ArrayAdapter<String> menuListAdapter;
+    private MyMenuListAdapter myMenuListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,54 +52,78 @@ public class MainActivity extends AppCompatActivity{
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        tryDish();
-
-        SetMenu thread = new SetMenu(Server_IP,port);
-        thread.start();
-
         initViews();
         setListeners();
-    }
+        testcast();
 
-    // ------------  假資料  ------------ //
-    private void tryDish(){
-        Dish d = new Dish("火腿蛋堡", 30, 0);
-        MenuList.add(d);
-        Dish dd = new Dish("培根蛋堡", 30, 0);
-        MenuList.add(dd);
-        Dish ddd = new Dish("原味蛋餅", 30, 0);
-        MenuList.add(ddd);
+        SetMenu thread = new SetMenu(Server_IP, port, mHandler, MenuList);
+        thread.start();
     }
-
+    private void testcast() {
+        Dish d1 = new Dish("滷肉飯", 30, 0);
+        Dish d2 = new Dish("雞肉飯", 35, 0);
+        Dish d3 = new Dish("貢丸湯", 20, 0);
+        MenuList.add(d1);
+        MenuList.add(d2);
+        MenuList.add(d3);
+    }
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch(msg.what){
+                case 1:
+                    myMenuListAdapter.notifyDataSetChanged();
+                    break;
+            }
+        }
+    };
 
     private void initViews() {
-
         menuListView = (ListView) findViewById(R.id.list_view);
-
-        ArrayList<String> menuArrayList = new ArrayList<>();
-        for(int i = 0; i < MenuList.size(); i++){
-            menuArrayList.add(MenuList.get(i).getName());
-        }
-
-        menuListAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, menuArrayList);
-        menuListView.setAdapter(menuListAdapter);
+        myMenuListAdapter = new MyMenuListAdapter(this, MenuList);/////
+        menuListView.setAdapter(myMenuListAdapter);
     }
 
     private void setListeners() {
         menuListView.setOnItemClickListener(choose_dish);
     }
 
+    ////////////////////////////////////////////////////////////
+    /*  onItemClick
+    按下餐點顯示圖片
+    LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+    final View diav = inflater.inflate(R.layout.dia_information, null);
+
+    final Dish GetDish = (Dish) myMenuListAdapter.getItem(position);
+    final String dish_name = GetDish.getName();
+    final int dish_price = GetDish.getPrice();
+    final TextView diaTitle = (TextView) diav.findViewById(R.id.information_title);
+    final TextView tvPrice = (TextView) diav.findViewById(R.id.show_price);
+    final ImageView picture = (ImageView) diav.findViewById(R.id.img_dish);
+
+    diaTitle.setText(dish_name);
+    tvPrice.setText(String.valueOf(dish_price));
+    ***Image.setImageResource();
+
+    final AlertDialog.Builder dishDialog = new AlertDialog.Builder(MainActivity.this);
+    dishDialog.setView(diav);
+    final AlertDialog dialog = dishDialog.show();
+    */
+    ////////////////////////////////////////////////////////////
     private AdapterView.OnItemClickListener choose_dish = new AdapterView.OnItemClickListener() {
 
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
             final View diav = inflater.inflate(R.layout.dia_order_dish, null);
 
-            final String dish_name = menuListAdapter.getItem(position);
+            final Dish GetDish = (Dish) myMenuListAdapter.getItem(position);
+            final String dish_name = GetDish.getName();
+            final int dish_price = GetDish.getPrice();
             final TextView diaTitle = (TextView) diav.findViewById(R.id.dialog_title);
             final EditText edtNum = (EditText) diav.findViewById(R.id.edt_ordernum);
-            final TextView tvNum = (TextView) diav.findViewById(R.id.tv_ordernum);
+            final TextView tvOrderNum = (TextView) diav.findViewById(R.id.tv_ordernum);
+            final TextView tvDishPrice = (TextView) diav.findViewById(R.id.tv_unitPrice);
             final RadioGroup rgroup = (RadioGroup) diav.findViewById(R.id.rgroup);
             final Button okBtn = (Button) diav.findViewById(R.id.button_ok);
             final Button cancelBtn = (Button) diav.findViewById(R.id.button_cancel);
@@ -107,11 +132,13 @@ public class MainActivity extends AppCompatActivity{
 
             for (int i = 0; i < OrderDishList.size(); i++) {
                 if (OrderDishList.get(i).getName() == dish_name) {
-                    tvNum.setText(String.valueOf(OrderDishList.get(i).getAmount()));
+                    tvOrderNum.setText(String.valueOf(OrderDishList.get(i).getAmount()));
                 }
             }
 
             diaTitle.setText(dish_name);
+            Log.e("dishPrice", ""+dish_price);
+            tvDishPrice.setText(String.valueOf(dish_price));
 
             final AlertDialog.Builder dishDialog = new AlertDialog.Builder(MainActivity.this);
             dishDialog.setView(diav);
@@ -134,18 +161,12 @@ public class MainActivity extends AppCompatActivity{
                                 }
                             }
                             if (!inListFlag) {
-                                int price = 0;
                                 int amount = Integer.valueOf(edtNum.getText().toString());
-                                for (int i = 0; i < MenuList.size(); i++) {
-                                    if (MenuList.get(i).getName() == dish_name) {
-                                        price = MenuList.get(i).getPrice();
-                                    }
-                                }
-                                Dish OD = new Dish(dish_name, price, amount);
+                                Dish OD = new Dish(dish_name, dish_price, amount);
                                 OrderDishList.add(OD);
                             }
                         } else {
-                            for (int i = 0; i < OrderDishList.size(); i++) {//這是不是可以else
+                            for (int i = 0; i < OrderDishList.size(); i++) {
                                 if (OrderDishList.get(i).getName() == dish_name) {
                                     int num = OrderDishList.get(i).getAmount();
                                     num -= Integer.valueOf(edtNum.getText().toString());
@@ -256,29 +277,6 @@ public class MainActivity extends AppCompatActivity{
                         dialog.cancel();
                     }
                 });
-                //belldilog.setTitle(R.string.dialog_bell_title);
-                //belldilog.setMessage(R.string.dialog_bell_msg);
-                /*
-                bellDilog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (TableNum == 0) {
-                            Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
-                            setTableNumDialog();
-                        } else {
-                            SendBell thread = new SendBell(Server_IP, port, TableNum);
-                            thread.start();
-                        }
-                    }
-                });
-                bellDilog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                });
-                bellDilog.show();*/
-
                 break;
 
             case R.id.action_order:
@@ -297,14 +295,13 @@ public class MainActivity extends AppCompatActivity{
     public void setTableNumDialog() {
         LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
         final View diav = inflater.inflate(R.layout.dia_tablenum, null);
-
-        final TextView tvNum = (TextView) diav.findViewById(R.id.tv_tableNum);
+        final TextView tvTableNum = (TextView) diav.findViewById(R.id.tv_tableNum);
         final EditText edtNum = (EditText) diav.findViewById(R.id.edt_tableNum);
         final Button okBtn = (Button) diav.findViewById(R.id.button_table_ok);
         final Button cancelBtn = (Button) diav.findViewById(R.id.button_table_cancel);
 
         final AlertDialog.Builder tableDialog = new AlertDialog.Builder(MainActivity.this);
-        tvNum.setText(String.valueOf(TableNum));
+            tvTableNum.setText(String.valueOf(TableNum));
         tableDialog.setView(diav);
         final AlertDialog dialog = tableDialog.show();
 
@@ -314,7 +311,7 @@ public class MainActivity extends AppCompatActivity{
             public void onClick(View v) {
                 try {
                     TableNum = Integer.valueOf(edtNum.getText().toString());
-                    Toast.makeText(MainActivity.this, "目前桌號為: " + String.valueOf(TableNum), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "您目前的桌號為: " + TableNum , Toast.LENGTH_SHORT).show();
                 } catch (Exception obj) {
                     Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
                 }
@@ -328,7 +325,6 @@ public class MainActivity extends AppCompatActivity{
                 dialog.cancel();
             }
         });
-
     }
 
     private void alreadyOrder() {
@@ -344,6 +340,7 @@ public class MainActivity extends AppCompatActivity{
         int totalPrice = 0;
         for (int i = 0; i < OrderDishList.size(); i++) {
             price = OrderDishList.get(i).getPrice() * OrderDishList.get(i).getAmount();
+            Log.e(TAG, String.valueOf(OrderDishList.get(i).getPrice()) + "   " + String.valueOf(OrderDishList.get(i).getAmount()));
             orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getAmount()) + " = $" + price);
             totalPrice += price;
         }
@@ -354,41 +351,44 @@ public class MainActivity extends AppCompatActivity{
 
         linearLayoutMain.addView(listView);//add listView into current context
 
-        final AlertDialog alreadyDialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.dialog_already_title).setView(linearLayoutMain)//add into dialog
-                .setNegativeButton(getResources().getString(R.string.dialog_already_sent), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface alreadyDialog, int which) {
-                        if (TableNum == 0) {
-                            Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
-                            setTableNumDialog();
-                        } else {
-                            AlertDialog.Builder confirmDialog = new  AlertDialog.Builder(MainActivity.this);
-                            confirmDialog.setTitle(R.string.dialog_confirm_title);
-                            confirmDialog.setMessage(R.string.dialog_confirm_msg);
-                            confirmDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    SendOrderDish thread = new SendOrderDish(Server_IP, port, TableNum, OrderDishList);
-                                    thread.start();
-                                }
-                            });
-                            confirmDialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-
-                                }
-                            });
-                            confirmDialog.show();
+        final AlertDialog.Builder alreadyDialog = new AlertDialog.Builder(this);
+        final int sendPrice = totalPrice;
+        alreadyDialog.setTitle(R.string.dialog_already_title);
+        alreadyDialog.setView(linearLayoutMain);//add into dialog;
+        alreadyDialog.setNegativeButton(getResources().getString(R.string.dialog_already_sent), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface alreadyDialog, int which) {
+                if (TableNum == 0) {
+                    Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
+                    setTableNumDialog();
+                } else {
+                    AlertDialog.Builder confirmDialog = new AlertDialog.Builder(MainActivity.this);
+                    confirmDialog.setTitle(R.string.dialog_confirm_title);
+                    confirmDialog.setMessage(R.string.dialog_confirm_msg);
+                    confirmDialog.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            SendOrderDish thread = new SendOrderDish(Server_IP, port, TableNum, OrderDishList, sendPrice);
+                            thread.start();
                         }
-                    }
-                })
-                .setPositiveButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface alreadyDialog, int which) {
-                        alreadyDialog.cancel();
-                    }
-                }).create();
+                    });
+                    confirmDialog.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    confirmDialog.show();
+                }
+            }
+        });
+        alreadyDialog.setPositiveButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface alreadyDialog, int which) {
+                alreadyDialog.cancel();
+            }
+        });
         alreadyDialog.show();
     }
+
 }

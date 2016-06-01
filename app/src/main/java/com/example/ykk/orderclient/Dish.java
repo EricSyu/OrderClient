@@ -8,6 +8,12 @@ public class Dish {
     private int price;
     private int amount;
 
+    public Dish(String name, int price) {
+        this.name = name;
+        this.price = price;
+        this.amount = 0;
+    }
+
     public Dish(String name, int price, int amount) {
         this.name = name;
         this.price = price;
