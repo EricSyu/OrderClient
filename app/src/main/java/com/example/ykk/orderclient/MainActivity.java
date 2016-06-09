@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -27,7 +28,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,8 +46,12 @@ public class MainActivity extends AppCompatActivity {
     boolean OrderFlag = true;
 
     //Menu ListView
-    private ListView menuListView;
-    private MyMenuListAdapter myMenuListAdapter;
+//    private ListView menuListView;
+//    private MyMenuListAdapter myMenuListAdapter;
+
+    //Expandable
+    private ExpandableListView elv ;
+    private ExpandableAdapter myExpandableAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,38 +62,76 @@ public class MainActivity extends AppCompatActivity {
 
         initViews();
         setListeners();
-        testcast();
+        testCast();
 
         SetMenu thread = new SetMenu(Server_IP, port, mHandler, MenuList);
         thread.start();
     }
-    private void testcast() {
+    private void testCast() {
         Dish d1 = new Dish("滷肉飯", 30, 0);
         Dish d2 = new Dish("雞肉飯", 35, 0);
         Dish d3 = new Dish("貢丸湯", 20, 0);
         MenuList.add(d1);
         MenuList.add(d2);
         MenuList.add(d3);
+
+
     }
     private Handler mHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             switch(msg.what){
                 case 1:
-                    myMenuListAdapter.notifyDataSetChanged();
+                    myExpandableAdapter.notifyDataSetChanged();
                     break;
             }
         }
     };
 
     private void initViews() {
-        menuListView = (ListView) findViewById(R.id.list_view);
-        myMenuListAdapter = new MyMenuListAdapter(this, MenuList);/////
-        menuListView.setAdapter(myMenuListAdapter);
+        //menuListView = (ListView) findViewById(R.id.list_view);
+        //myMenuListAdapter = new MyMenuListAdapter(this, MenuList);/////
+        //menuListView.setAdapter(myMenuListAdapter);
+
+        elv = (ExpandableListView) findViewById(R.id.list_view);
+
+        /*  限制只展開一組  */
+        elv.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+            @Override
+            public void onGroupExpand(int groupPosition) {
+                for (int i = 0; i < elv.getCount(); i++) {
+                    if (groupPosition != i) {
+                        elv.collapseGroup(i);
+                    }
+                }
+            }
+        });
+        elv.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v,
+                                        int groupPosition, int childPosition, long id) {
+                Toast.makeText(MainActivity.this, "click", Toast.LENGTH_SHORT).show();
+                Log.e("click","click");
+                return false;
+            }
+        });
+
+        // 準備一級清單中顯示的資料:2個一級清單,分別顯示"group1"和"group2"
+        List<Map<String, String>> groups = new ArrayList<Map<String, String>>();
+        Map<String, String> group1 = new HashMap<String, String>();
+        group1.put("group", "分類一");
+        Map<String, String> group2 = new HashMap<String, String>();
+        group2.put("group", "分類二");
+        groups.add(group1);
+        groups.add(group2);
+
+        myExpandableAdapter = new ExpandableAdapter(this, MenuList, groups);
+        elv.setAdapter(myExpandableAdapter);
     }
 
     private void setListeners() {
-        menuListView.setOnItemClickListener(choose_dish);
+        elv.setOnChildClickListener(choose_dish);//.setOnItemClickListener(choose_dish);
+        //menuListView.setOnItemClickListener(choose_dish);
     }
 
     ////////////////////////////////////////////////////////////
@@ -110,14 +156,23 @@ public class MainActivity extends AppCompatActivity {
     final AlertDialog dialog = dishDialog.show();
     */
     ////////////////////////////////////////////////////////////
-    private AdapterView.OnItemClickListener choose_dish = new AdapterView.OnItemClickListener() {
+   private ExpandableListView.OnChildClickListener choose_dish = new ExpandableListView.OnChildClickListener() {
+       // private AdapterView.OnItemClickListener  choose_dish = new AdapterView.OnItemClickListener() {
+       @Override
+       public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+           final Dish GetDish = (Dish) myExpandableAdapter.getChild(groupPosition,childPosition);
+           Toast.makeText(MainActivity.this, "點到", Toast.LENGTH_SHORT).show();
+           Log.e("ccc","cc");
+           //Toast.makeText(MainActivity.this, itemData.get(title.get(groupPosition)).get(childPosition)+" click", 0).show();
 
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+       // @Override
+        //public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
             LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-            final View diav = inflater.inflate(R.layout.dia_order_dish, null);
+            /*final View diav = inflater.inflate(R.layout.dia_order_dish, null);
 
-            final Dish GetDish = (Dish) myMenuListAdapter.getItem(position);
+            //final Dish GetDish = (Dish) myMenuListAdapter.getItem(position);
+
+
             final String dish_name = GetDish.getName();
             final int dish_price = GetDish.getPrice();
             final TextView diaTitle = (TextView) diav.findViewById(R.id.dialog_title);
@@ -143,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
             final AlertDialog.Builder dishDialog = new AlertDialog.Builder(MainActivity.this);
             dishDialog.setView(diav);
             final AlertDialog dialog = dishDialog.show();
-            okBtn.setOnClickListener(new Button.OnClickListener() {
+            /*okBtn.setOnClickListener(new Button.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
@@ -191,15 +246,16 @@ public class MainActivity extends AppCompatActivity {
                     }
                     dialog.cancel();
                 }
-            });
+            });*/
 
-            cancelBtn.setOnClickListener(new Button.OnClickListener() {
+            /*cancelBtn.setOnClickListener(new Button.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
                     dialog.cancel();
                 }
-            });
+            });*/
+           return false;
         }
     };
 
