@@ -24,59 +24,6 @@
             android:paddingBottom="5dp"
             android:textColor="#FFFFFF"
             android:gravity="center_horizontal" />
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:weightSum="1"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="45dp"
-                android:textSize="18sp"
-                android:text="@string/dialog_unit_price"
-                android:id="@+id/textView_unitPrice"
-                android:gravity="center"
-                android:textStyle="bold"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:text="@string/dialog_zero"
-                android:id="@+id/tv_unitPrice"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:weightSum="1"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="45dp"
-                android:textSize="18sp"
-                android:text="@string/dialog_current_amount"
-                android:id="@+id/textView7"
-                android:gravity="center"
-                android:textStyle="bold"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:text="@string/dialog_zero"
-                android:id="@+id/tv_ordernum"
-                android:textStyle="bold" />
-        </LinearLayout>
 
         <LinearLayout
             android:orientation="horizontal"
@@ -87,7 +34,7 @@
             android:gravity="center">
 
             <RadioGroup
-                android:layout_width="match_parent"
+                android:layout_width="149dp"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:id="@+id/rgroup"
@@ -96,45 +43,40 @@
                 <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/dialog_order"
-                    android:id="@+id/rb_Order"
-                    android:checked="true" />
+                    android:text="@string/dialog_out"
+                    android:id="@+id/rb_Out"
+                    android:checked="true"
+                    android:textStyle="bold"
+                    android:textSize="17dp" />
 
                 <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/dialog_cancel_order"
-                    android:id="@+id/rb_CancelOrder"
+                    android:text="@string/dialog_in"
+                    android:id="@+id/rb_In"
                     android:layout_gravity="center_horizontal"
-                    android:checked="false" />
+                    android:checked="false"
+                    android:textSize="17dp"
+                    android:textStyle="bold" />
 
             </RadioGroup>
-        </LinearLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_weight="0.09">
-
-            <TextView
+            TextView
                 android:layout_width="wrap_content"
-                android:layout_height="45dp"
-                android:textSize="18sp"
-                android:text="@string/dialog_amount"
-                android:id="@+id/textView4"
+                android:layout_height="wrap_content"
+                android:text="桌號: "
+                android:id="@+id/textView2"
                 android:textStyle="bold"
-                android:gravity="center"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp" />
+                android:textSize="20dp" />
 
-            <EditText
-                android:layout_width="133dp"
+            EditText
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:inputType="number"
                 android:ems="10"
-                android:id="@+id/edt_ordernum" />
+                android:id="@+id/edt_table"
+                android:layout_weight="1" />
+
         </LinearLayout>
 
         <LinearLayout

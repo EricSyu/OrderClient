@@ -20,7 +20,6 @@ public class SetMenu extends Thread {
 
     private String Server_IP;
     private int port;
-    private MyMenulstAdapter menuListAdapter;
     private ArrayList<Dish> MenuList;
     private Handler handler;
 
@@ -54,8 +53,7 @@ public class SetMenu extends Thread {
                 Log.e(TAG, "DishName: " + dish_name);
                 int dish_price = Integer.valueOf(recivemsg.split(" ")[1]);
                 Log.e(TAG, "DishPrice: " + dish_price);
-                Dish dish = new Dish(dish_name, dish_price, 0);
-                //MenuList.add(dish);
+                Dish dish = new Dish(dish_name, dish_price, "");
                 menuList.add(dish);
             }
             socket.close();

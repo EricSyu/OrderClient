@@ -7,10 +7,19 @@ public class Dish {
     private String name;
     private int price;
     private int amount;
+    private String type;
 
-    public Dish(String name, int price, int amount) {
+    public Dish(String name, int price, String type) {
         this.name = name;
         this.price = price;
+        this.type = type;
+        this.amount = 0;
+    }
+
+    public Dish(String name, int price, String type, int amount) {
+        this.name = name;
+        this.price = price;
+        this.type = type;
         this.amount = amount;
     }
 
@@ -22,11 +31,19 @@ public class Dish {
         return price;
     }
 
+    public String getType(){
+        return type;
+    }
+
     public int getAmount() {
         return amount;
     }
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    public void setType(String type){
+        this.type = type;
     }
 }

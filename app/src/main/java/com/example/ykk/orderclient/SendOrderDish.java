@@ -3,11 +3,12 @@ package com.example.ykk.orderclient;
 import android.util.Log;
 
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 /**
  * Created by Louis on 2016/4/7.
@@ -17,14 +18,17 @@ public class SendOrderDish extends Thread {
 
     private String Server_IP;
     private int port, TableNum, price;
-    private LinkedList<Dish> OrderDishList;
+    private ArrayList<Dish> OrderDishList;
+    private boolean InOrOutFlag;
+    private int takeAwayNum;
 
-    public SendOrderDish(String Server_IP, int port, int TableNum, LinkedList<Dish> OrderDishList, int price) {
+    public SendOrderDish(String Server_IP, int port, int TableNum, ArrayList<Dish> OrderDishList, int price, boolean InOrOutFlag) {
         this.Server_IP = Server_IP;
         this.port = port;
         this.TableNum = TableNum;
         this.OrderDishList = OrderDishList;
         this.price = price;
+        this.InOrOutFlag = InOrOutFlag;
     }
 
     @Override
@@ -35,8 +39,13 @@ public class SendOrderDish extends Thread {
             Log.e(TAG, "Connected");
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+            DataInputStream dis = new DataInputStream(socket.getInputStream());
 
-            dos.writeInt(2);
+            if (InOrOutFlag) {
+                dos.writeInt(2);
+            } else {
+                dos.writeInt(5);
+            }
             dos.flush();
             dos.writeInt(TableNum);
             dos.flush();
@@ -45,32 +54,24 @@ public class SendOrderDish extends Thread {
             dos.flush();
             String send_msg = "";
             for (int i = 0; i < OrderDishList.size(); i++) {
-                send_msg += OrderDishList.get(i).getName() + "x" + OrderDishList.get(i).getAmount() + (i == OrderDishList.size()-1 ? "\n" : " ");
+                send_msg += OrderDishList.get(i).getName() + "x" + OrderDishList.get(i).getAmount() + (i == OrderDishList.size() - 1 ? "\n" : " ");
             }
             Log.e(TAG, "Send msg:" + send_msg);
-
             bw.write(send_msg);
             bw.flush();
-//            dos.write(send_msg.getBytes());
-//            dos.flush();
 
-//            bw.write(2);
-//            bw.flush();
-//            bw.write(TableNum);
-//            bw.flush();
-//            bw.write(OrderDishList.size());
-//            bw.flush();
-//            for (int i = 0; i < OrderDishList.size(); i++) {
-//                bw.write(OrderDishList.get(i).getName() + "x" + String.valueOf(OrderDishList.get(i).getAmount()));
-//                bw.flush();
-//            }
-//            bw.write(price);
-//            bw.flush();
+            if(!InOrOutFlag){
+                takeAwayNum = dis.readInt();
+            }
 
             socket.close();
             Log.e(TAG, "Closed");
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public int getTakeAwayNum(){
+        return takeAwayNum;
     }
 }
