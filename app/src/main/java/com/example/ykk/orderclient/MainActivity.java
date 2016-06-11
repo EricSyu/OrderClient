@@ -32,10 +32,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    static String Server_IP = "172.20.10.2";
+    static String Server_IP = "192.168.1.1";
     static int port = 1212;
 
-    public  ArrayList<Dish> MenuList = new ArrayList<Dish>();
+    public ArrayList<Dish> MenuList = new ArrayList<Dish>();
     LinkedList<Dish> OrderDishList = new LinkedList<>();
     int TableNum = 0;
     boolean OrderFlag = true;
@@ -53,15 +53,25 @@ public class MainActivity extends AppCompatActivity {
 
         initViews();
         setListeners();
+        testcast();
 
         SetMenu thread = new SetMenu(Server_IP, port, mHandler, MenuList);
         thread.start();
     }
 
-    private Handler mHandler = new Handler(){
+    private void testcast() {
+        Dish d1 = new Dish("滷肉飯", 30, 0);
+        Dish d2 = new Dish("雞肉飯", 35, 0);
+        Dish d3 = new Dish("貢丸湯", 20, 0);
+        MenuList.add(d1);
+        MenuList.add(d2);
+        MenuList.add(d3);
+    }
+
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            switch(msg.what){
+            switch (msg.what) {
                 case 1:
                     myMenulstAdapter.notifyDataSetChanged();
                     break;
@@ -106,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             diaTitle.setText(dish_name);
-            Log.e("dishprice", ""+dish_price);
+            Log.e("dishprice", "" + dish_price);
             tvDishPrice.setText(String.valueOf(dish_price));
 
             final AlertDialog.Builder dishDialog = new AlertDialog.Builder(MainActivity.this);
@@ -270,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
         final Button cancelBtn = (Button) diav.findViewById(R.id.button_table_cancel);
 
         final AlertDialog.Builder tableDialog = new AlertDialog.Builder(MainActivity.this);
-            tvTableNum.setText(String.valueOf(TableNum));
+        tvTableNum.setText(String.valueOf(TableNum));
         tableDialog.setView(diav);
         final AlertDialog dialog = tableDialog.show();
 
@@ -280,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 try {
                     TableNum = Integer.valueOf(edtNum.getText().toString());
-                    Toast.makeText(MainActivity.this, "您目前的桌號為: " + TableNum , Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "您目前的桌號為: " + TableNum, Toast.LENGTH_SHORT).show();
                 } catch (Exception obj) {
                     Toast.makeText(MainActivity.this, R.string.toast_no_tablenum, Toast.LENGTH_SHORT).show();
                 }
