@@ -12,7 +12,8 @@ Link: [OrderBoss App](https://github.com/EricSyu/OrderBoss)
 * If your meal is too late, you can press the button of service bell,and the boss will known.
 
 ## Use
-After the guests enter the shop, the guests just connect the boss' wifi and open the app.
+After the guests enter the shop, the guests must connect the boss' wifi.<br>
+Then open the app, and you can start use.
 
 ## Screenshot
 ![Image01](https://github.com/EricSyu/OrderClient/blob/master/image/01.jpg?raw=true)
