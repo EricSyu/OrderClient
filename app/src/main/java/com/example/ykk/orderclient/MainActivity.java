@@ -1,7 +1,10 @@
 package com.example.ykk.orderclient;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -38,9 +41,13 @@ public class MainActivity extends AppCompatActivity {
     static String Server_IP = "192.168.1.1";
     static int port = 1212;
 
-    public ArrayList<Dish> MenuList = new ArrayList<Dish>();
+    private static final int REQUEST_LOCATION = 0;
+
+    public ArrayList<String> HotDishes = new ArrayList<>();
     public ArrayList<ArrayList<Dish>> SortedMenuList = new ArrayList<>();
+    List<Map<String, String>> groups = new ArrayList<Map<String, String>>();
     int TableNum = 0;
+    int takeAwayNum = 0;
     boolean InOrOutFlag = false; // True: 內用  False: 外帶
 
     //Expandable
@@ -54,22 +61,64 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        testCast();
+        //testCast();
 
         initViews();
         setListeners();
 
-        SetMenu thread = new SetMenu(Server_IP, port, mHandler, MenuList);
+        SetMenu thread = new SetMenu(Server_IP, port, mHandler, SortedMenuList, groups, HotDishes);
         thread.start();
+
+        requestPermission();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_LOCATION:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+
+                } else {
+                    finish();
+                }
+                break;
+        }
+    }
+
+    public void requestPermission(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_LOCATION);
+            }
+        }
     }
 
     private void testCast() {
+        ArrayList<Dish> MenuList = new ArrayList<>();
         Dish d1 = new Dish("滷肉飯", 30, "飯類");
         Dish d2 = new Dish("雞肉飯", 35, "飯類");
         Dish d3 = new Dish("貢丸湯", 20, "湯類");
         MenuList.add(d1);
         MenuList.add(d2);
         MenuList.add(d3);
+        HashSet<String> set = new HashSet();
+        // 準備一級清單中顯示的資料:2個一級清單,分別顯示"group1"和"group2"
+        for (Dish dish : MenuList) {
+            set.add(dish.getType());
+        }
+
+        for (String type : set) {
+            ArrayList<Dish> childMenuList = new ArrayList<>();
+            for (Dish dish : MenuList) {
+                if (type.equals(dish.getType())) {
+                    childMenuList.add(dish);
+                }
+            }
+            SortedMenuList.add(childMenuList);
+            Map<String, String> group1 = new HashMap<>();
+            group1.put("group", type);
+            groups.add(group1);
+        }
     }
 
     private Handler mHandler = new Handler() {
@@ -87,79 +136,24 @@ public class MainActivity extends AppCompatActivity {
 
         elv = (ExpandableListView) findViewById(R.id.list_view);
 
-        /*  限制只展開一組  */
-        elv.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-            @Override
-            public void onGroupExpand(int groupPosition) {
-                for (int i = 0; i < elv.getCount(); i++) {
-                    if (groupPosition != i) {
-                        elv.collapseGroup(i);
-                    }
-                }
-            }
-        });
+//        /*  限制只展開一組  */
+//        elv.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+//            @Override
+//            public void onGroupExpand(int groupPosition) {
+//                for (int i = 0; i < elv.getCount(); i++) {
+//                    if (groupPosition != i) {
+//                        elv.collapseGroup(i);
+//                    }
+//                }
+//            }
+//        });
 
-        HashSet<String> set = new HashSet();
-        // 準備一級清單中顯示的資料:2個一級清單,分別顯示"group1"和"group2"
-        List<Map<String, String>> groups = new ArrayList<Map<String, String>>();
-
-        for (Dish dish : MenuList) {
-            set.add(dish.getType());
-        }
-
-        for (String type : set) {
-            ArrayList<Dish> childMenuList = new ArrayList<>();
-            for (Dish dish : MenuList) {
-                if (type.equals(dish.getType())) {
-                    childMenuList.add(dish);
-                }
-            }
-            SortedMenuList.add(childMenuList);
-            Map<String, String> group1 = new HashMap<>();
-            group1.put("group", type);
-            groups.add(group1);
-        }
-
-        myExpandableAdapter = new ExpandableAdapter(this, SortedMenuList, groups);
+        myExpandableAdapter = new ExpandableAdapter(this, groups, SortedMenuList, HotDishes);
         elv.setAdapter(myExpandableAdapter);
     }
 
     private void setListeners() {
-//        elv.setOnChildClickListener(choose_dish);//.setOnItemClickListener(choose_dish);
     }
-
-    ////////////////////////////////////////////////////////////
-    /*  onItemClick
-    按下餐點顯示圖片
-    LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-    final View diav = inflater.inflate(R.layout.dia_information, null);
-
-    final Dish GetDish = (Dish) myMenuListAdapter.getItem(position);
-    final String dish_name = GetDish.getName();
-    final int dish_price = GetDish.getPrice();
-    final TextView diaTitle = (TextView) diav.findViewById(R.id.information_title);
-    final TextView tvPrice = (TextView) diav.findViewById(R.id.show_price);
-    final ImageView picture = (ImageView) diav.findViewById(R.id.img_dish);
-
-    diaTitle.setText(dish_name);
-    tvPrice.setText(String.valueOf(dish_price));
-    ***Image.setImageResource();
-
-    final AlertDialog.Builder dishDialog = new AlertDialog.Builder(MainActivity.this);
-    dishDialog.setView(diav);
-    final AlertDialog dialog = dishDialog.show();
-    */
-    ////////////////////////////////////////////////////////////
-    private ExpandableListView.OnChildClickListener choose_dish = new ExpandableListView.OnChildClickListener() {
-        @Override
-        public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-            final Dish GetDish = (Dish) myExpandableAdapter.getChild(groupPosition, childPosition);
-            Toast.makeText(MainActivity.this, "點到", Toast.LENGTH_SHORT).show();
-            Log.e("ccc", "cc");
-            //Toast.makeText(MainActivity.this, itemData.get(title.get(groupPosition)).get(childPosition)+" click", 0).show();
-            return true;
-        }
-    };
 
     @Override
     public void onBackPressed() {
@@ -229,6 +223,9 @@ public class MainActivity extends AppCompatActivity {
                     alreadyOrder(OrderDishList);
                 }
                 break;
+            case R.id.action_takeAway:
+                checkedTakeAwayNumDialog();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -291,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
         int totalPrice = 0;
         for (int i = 0; i < OrderDishList.size(); i++) {
             price = OrderDishList.get(i).getPrice() * OrderDishList.get(i).getAmount();
-            Log.e(TAG, String.valueOf(OrderDishList.get(i).getPrice()) + "   " + String.valueOf(OrderDishList.get(i).getAmount()));
+            //Log.e(TAG, String.valueOf(OrderDishList.get(i).getPrice()) + "   " + String.valueOf(OrderDishList.get(i).getAmount()));
             orderList.add(OrderDishList.get(i).getName() + " x" + String.valueOf(OrderDishList.get(i).getAmount()) + " = $" + price);
             totalPrice += price;
         }
@@ -348,15 +345,15 @@ public class MainActivity extends AppCompatActivity {
                         thread.start();
                     }
                 } else {
-                    SendOrderDish thread = new SendOrderDish(Server_IP, port, 0, OrderDishList, sendPrice, InOrOutFlag);
+                    SendOrderDish thread = new SendOrderDish(Server_IP, port, -1, OrderDishList, sendPrice, InOrOutFlag);
                     thread.start();
                     try {
                         thread.join();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    int takeAwayNum = thread.getTakeAwayNum();
-                    checkedTakeAwayNumDialog(takeAwayNum);
+                    takeAwayNum = thread.getTakeAwayNum();
+                    checkedTakeAwayNumDialog();
                 }
                 dialog.cancel();
             }
@@ -369,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void checkedTakeAwayNumDialog(int takeAwayNum) {
+    public void checkedTakeAwayNumDialog() {
         LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
         final View diav = inflater.inflate(R.layout.dia_check_awaynum, null);
 

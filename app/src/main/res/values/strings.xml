@@ -5,9 +5,10 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <!-- toolbar  -->
-    <string name="action_order">Order</string>
-    <string name="action_bell">Bell</string>
-    <string name="aciton_setTable">SetTable</string>
+    <string name="action_order">已選菜單</string>
+    <string name="action_bell">服務鈴</string>
+    <string name="aciton_setTable">設置桌號</string>
+    <string name="aciton_setTakeAway">外帶號碼</string>
 
     <!-- dialog - order -->
     <string name="dialog_ok">確認</string>

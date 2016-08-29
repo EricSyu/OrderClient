@@ -41,11 +41,7 @@ public class SendOrderDish extends Thread {
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
             DataInputStream dis = new DataInputStream(socket.getInputStream());
 
-            if (InOrOutFlag) {
-                dos.writeInt(2);
-            } else {
-                dos.writeInt(5);
-            }
+            dos.writeInt(2);
             dos.flush();
             dos.writeInt(TableNum);
             dos.flush();
@@ -63,6 +59,7 @@ public class SendOrderDish extends Thread {
             if(!InOrOutFlag){
                 takeAwayNum = dis.readInt();
             }
+            Log.e(TAG, "Num:" + takeAwayNum);
 
             socket.close();
             Log.e(TAG, "Closed");
